@@ -1,0 +1,121 @@
+name: residencial-aurora-base
+
+x-api: &api
+  image: residencial-aurora-base-api:local
+  init: true
+  healthcheck:
+    test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health', timeout=3).close()"]
+    interval: 5s
+    timeout: 4s
+    retries: 12
+    start_period: 4s
+
+x-endpoints: &endpoints
+  AURORA_AUTH_URL: http://auth:8000
+  AURORA_USERS_URL: http://users:8000
+  AURORA_AGENT_URL: http://agent:8000
+  AURORA_INTERNAL_TOKEN: ${AURORA_INTERNAL_TOKEN:?Execute scripts/start.sh primeiro.}
+
+services:
+  identity-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: aurora_identity
+      POSTGRES_USER: aurora
+      POSTGRES_PASSWORD: ${AURORA_IDENTITY_PASSWORD:?Execute scripts/start.sh primeiro.}
+    volumes:
+      - identity-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "aurora", "-d", "aurora_identity"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  condo-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: aurora_condo
+      POSTGRES_USER: aurora
+      POSTGRES_PASSWORD: ${AURORA_CONDO_PASSWORD:?Execute scripts/start.sh primeiro.}
+    volumes:
+      - condo-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "aurora", "-d", "aurora_condo"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  auth:
+    <<: *api
+    build: .
+    command: ["uvicorn", "services.identity.app:auth_app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
+    environment:
+      <<: *endpoints
+      DATABASE_URL: postgresql://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity
+      AURORA_JWT_KEY: ${AURORA_JWT_KEY:?Execute scripts/start.sh primeiro.}
+      DEMO_SUPER_PASSWORD: ${DEMO_SUPER_PASSWORD:?Execute scripts/start.sh primeiro.}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?Execute scripts/start.sh primeiro.}
+      DEMO_RESIDENT_PASSWORD: ${DEMO_RESIDENT_PASSWORD:?Execute scripts/start.sh primeiro.}
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      identity-db:
+        condition: service_healthy
+
+  users:
+    <<: *api
+    command: ["uvicorn", "services.identity.app:users_app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
+    environment:
+      <<: *endpoints
+      DATABASE_URL: postgresql://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity
+    depends_on:
+      auth:
+        condition: service_healthy
+
+  agent:
+    <<: *api
+    command: ["uvicorn", "services.agent.app:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
+    environment:
+      AURORA_INTERNAL_TOKEN: ${AURORA_INTERNAL_TOKEN:?Execute scripts/start.sh primeiro.}
+    depends_on:
+      auth:
+        condition: service_started
+
+  condo:
+    <<: *api
+    command: ["uvicorn", "services.domain.app:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
+    environment:
+      <<: *endpoints
+      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      condo-db:
+        condition: service_healthy
+      users:
+        condition: service_healthy
+      agent:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    ports:
+      - "127.0.0.1:${AURORA_PORT:-8767}:80"
+    depends_on:
+      auth:
+        condition: service_healthy
+      users:
+        condition: service_healthy
+      condo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  identity-data:
+  condo-data:
