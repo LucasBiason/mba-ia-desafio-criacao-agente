@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360">
+  <title>Residencial Aurora — Regra é regra</title>
+  <defs>
+    <linearGradient id="sky" x2="100%" y2="0%">
+      <stop stop-color="#172B36"/>
+      <stop offset="1" stop-color="#264F54"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="360" rx="28" fill="url(#sky)"/>
+  <path d="M74 54h1052v252H74Z" fill="none" stroke="#8DD7C4" stroke-opacity=".28"/>
+  <g font-family="system-ui, sans-serif">
+    <text x="112" y="135" fill="#8DD7C4" font-size="22" font-weight="700" letter-spacing="5">REGRA É REGRA</text>
+    <text x="108" y="205" fill="#F8EEE3" font-size="60" font-weight="700">Residencial Aurora</text>
+    <text x="112" y="252" fill="#DAE8E4" font-size="24">Assistente virtual do condomínio</text>
+  </g>
+  <circle cx="973" cy="149" r="60" fill="#F6B879"/>
+  <path d="M821 193l91-78 91 78v99H821Z" fill="#F8EEE3"/>
+  <path d="M889 292v-62h46v62" fill="#172B36"/>
+  <path d="M1023 196h58v96h-58Z" fill="#8DD7C4"/>
+  <path d="M783 292h325" stroke="#DAE8E4" stroke-width="2"/>
+</svg>

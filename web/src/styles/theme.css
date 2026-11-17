@@ -1,0 +1,22 @@
+/* Aurora extends the Synapse package with project-specific colors only. */
+:root {
+  color-scheme: light;
+  --background: 155 21% 96%;
+  --foreground: 159 30% 13%;
+  --card: 45 38% 99%;
+  --card-foreground: 159 30% 13%;
+  --primary: 160 53% 23%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 157 24% 89%;
+  --muted: 151 21% 92%;
+  --muted-foreground: 156 15% 34%;
+  --border: 149 17% 81%;
+  --input-background: 0 0% 100%;
+  --ring: 157 56% 31%;
+  --radius-card: 1.125rem;
+  --radius-button: .625rem;
+  --radius-input: .625rem;
+  --radius-alert: .625rem;
+  --font-family: "DM Sans", system-ui, sans-serif;
+  --font-family-heading: Georgia, serif;
+}
