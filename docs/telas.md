@@ -70,4 +70,4 @@ O [componente de calendário mensal](../web/src/calendar.jsx) recebe o mês (`YY
 
 ## Marca do portal
 
-Login, barra lateral e menu móvel usam o mesmo logo de branding/logo.svg, distribuído em web/public/aurora-logo.svg para o build do frontend. O link da marca preserva seu nome acessível e permanece visível no modo compacto.
+Login, barra lateral e menu móvel usam o mesmo logo de branding/logo.svg, distribuído em web/src/assets/aurora-logo.svg com nome de arquivo versionado pelo build do frontend. O link da marca preserva seu nome acessível e permanece visível no modo compacto.

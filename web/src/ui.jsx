@@ -1,3 +1,4 @@
+import auroraLogo from "./assets/aurora-logo.svg";
 import { Button } from "./synapse/Button";
 import { Alert } from "./synapse/Alert";
 
@@ -13,7 +14,7 @@ export const timeLabel = date => {
 
 export function Brand({ light = false, onNavigate }) {
   return <a className={"brand" + (light ? " brand-light" : "")} href="#/inicio" aria-label="Residencial Aurora, início" onClick={onNavigate}>
-    <img className="brand-mark" src="/aurora-logo.svg" alt="" width="128" height="128" />
+    <img className="brand-mark" src={auroraLogo} alt="" width="128" height="128" />
     <span><strong>Aurora</strong><small>Residencial</small></span>
   </a>;
 }

@@ -2,7 +2,7 @@
 
 ## Alcance e situação
 
-A base foi integrada ao checkout do fork LucasBiason/mba-ia-desafio-criacao-agente na branch local feat/base-administrativa. O README com identidade visual, os assets e o enunciado foram preservados. O catálogo F01–F14 consolida os requisitos e docs/prd mantém os ponteiros dos identificadores anteriores. A cópia integral anterior à integração foi conservada fora do checkout para recuperação.
+A base foi integrada ao checkout do fork LucasBiason/mba-ia-desafio-criacao-agente na branch local feat/base-administrativa. O README com identidade visual, os assets e o enunciado foram preservados. O catálogo F01–F14 consolida os requisitos. A cópia integral anterior à integração foi conservada fora do checkout para recuperação.
 
 As telas administrativas entregam usuários, apartamentos, áreas, agenda, visitas e regulamento. Agenda e visitas permitem registrar horários de registros existentes. O morador dispõe de consultas próprias e sessão de chat persistida. O serviço de agente responde AGENT_NOT_CONFIGURED. Criação e cancelamento por ferramentas, confirmação, consulta ao regulamento pelo modelo e avaliação acadêmica continuam no roteiro guiado.
 

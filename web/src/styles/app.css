@@ -125,12 +125,12 @@ details + details { border-top: 1px solid var(--line); padding-top: .8rem; }
 .brand-mark {
   display: grid;
   place-items: center;
-  flex: 0 0 2.65rem;
-  width: 2.65rem;
-  height: 2.65rem;
+  flex: 0 0 3rem;
+  width: 3rem;
+  height: 3rem;
   overflow: hidden;
-  border-radius: .85rem;
-  background: var(--brand);
+  border-radius: .6rem;
+  object-fit: contain;
 }
 .area-mark span {
   display: block;
