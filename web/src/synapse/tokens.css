@@ -1,0 +1,247 @@
+/*
+ * ─── Design Tokens — Source of Truth ─────────────────────────────────────────
+ * Gerado a partir de docs/shared/tokens/tokens.json
+ * Todos os projetos importam este arquivo via @import "@shared/tokens/tokens.css"
+ * NÃO edite diretamente — edite tokens.json e regenere.
+ */
+
+/* Google Fonts: cada stack faz o hoist em seu próprio globals.css (React/Vue/Svelte)
+ * ou via <link> em index.html / preview-head.html (Synapse UI). Não duplicar aqui —
+ * Vite/Lightning CSS reordena e gera warning "must precede all other rules". */
+
+/* ── Motion tokens (durações, easings, reduced-motion) ──────────────────── */
+@import "./motion.css";
+
+/* ── Light mode (default) ─────────────────────────────────────────────────── */
+:root {
+  --font-size: 16px;
+
+  /* Typography — font sizes */
+  --text-h1: 48px;
+  --text-h2: 30px;
+  --text-h3: 20px;
+  --text-h4: 16px;
+  --text-p: 14px;
+  --text-label: 12px;
+
+  /* Typography — font family
+     --font-family-active é trocado pelas classes .fonte-* no <html>.
+     --font-family aponta sempre para o active para que consumidores existentes
+     (componentes que usam var(--font-family)) acompanhem a troca. */
+  --font-family-active: "Open Sans", sans-serif;
+  --font-family: var(--font-family-active);
+  /* Fonte de titulos (headings) — identidade do portfolio */
+  --font-family-heading: "Raleway", sans-serif;
+
+  /* Typography — font weights */
+  --font-weight-extra-bold: 800;
+  --font-weight-semi-bold: 600;
+  --font-weight-medium: 500;
+  --font-weight-regular: 400;
+
+  /* Typography — line heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  --line-height-loose: 2;
+
+  /* Typography — letter spacing */
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-normal: 0em;
+  --letter-spacing-wide: 0.02em;
+
+  /* Surfaces */
+  --background: 218 27% 94%; /* nord6 */
+  --foreground: 220 16% 22%; /* nord0 */
+  --card: 218 27% 97%; /* snow-storm bright (elevado) */
+  --card-foreground: 220 16% 22%; /* nord0 */
+  --popover: 218 27% 97%;
+  --popover-foreground: 220 16% 22%;
+
+  /* Brand / Interactive — Nord Frost */
+  --primary: 213 38% 42%; /* nord10 escurecido p/ WCAG AA (texto claro) */
+  --primary-foreground: 218 27% 94%; /* nord6 */
+  --secondary: 219 28% 88%; /* nord4 */
+  --secondary-foreground: 220 16% 22%; /* nord0 */
+  --muted: 218 27% 92%; /* nord5 */
+  --muted-foreground: 220 16% 36%; /* nord3 */
+  --accent: 193 43% 67%; /* nord8 */
+  --accent-foreground: 220 16% 22%; /* nord0 */
+
+  /* Feedback — Nord Aurora, com contraste WCAG 2.1 AA (≥4.5:1) para texto sobre bg colorido
+     E também para text-<color> sobre bg-<color>/10 (soft variants do shadcn radix-nova) */
+  --destructive: 354 50% 46%; /* nord11 escurecido */
+  --destructive-foreground: 0 0% 100%;
+  --success: 92 40% 30%; /* nord14 escurecido */
+  --success-foreground: 0 0% 100%;
+  --warning: 40 80% 32%; /* nord13 escurecido */
+  --warning-foreground: 0 0% 100%;
+  --info: 213 38% 42%; /* nord10 (família primary) */
+  --info-foreground: 0 0% 100%;
+
+  /* Structure — Nord */
+  --border: 219 28% 88%; /* nord4 */
+  --input: 219 28% 88%; /* nord4 */
+  --input-background: 218 27% 97%;
+  --ring: 213 38% 42%; /* primary */
+  --ring-offset-width: 2px;
+  --ring-offset-color: 218 27% 94%;
+
+  /* Spacing base — consumido pelo Tailwind v4 via @theme inline (--spacing).
+     Tailwind calcula p-{n}, gap-{n}, m-{n}, space-{n}, etc. como n × --spacing-base.
+     Densidades em themes/densities.css override este valor (condensado/confortável),
+     afetando TODOS os espaçamentos proporcionalmente. */
+  --spacing-base: 0.25rem; /* 4px — padrão Tailwind */
+
+  /* Spacing scale — grid de 8 (múltiplos ou divisores de 8 apenas).
+     Use estes tokens em CSS standalone (.synapse-*, basecoat-overrides) quando
+     precisar de um valor de spacing nomeado.
+     Acompanham a densidade automaticamente porque referenciam --spacing-base.
+
+     Regra do projeto: spacing deve ser múltiplo OU divisor de 8.
+     Valores fora do grid (10, 12, 14, 20, 28, 36, 44, 56...) NÃO devem existir
+     como tokens — se aparecerem em CSS, são bug a ser corrigido. */
+  --spacing-0: 0;
+  --spacing-px: 1px; /* hairline / border */
+  --spacing-0-5: calc(
+    var(--spacing-base) * 0.5
+  ); /* 2px  — divisor de 8 (8÷4) */
+  --spacing-1: calc(var(--spacing-base) * 1); /* 4px  — divisor de 8 (8÷2) */
+  --spacing-2: calc(var(--spacing-base) * 2); /* 8px  — base do grid */
+  --spacing-4: calc(var(--spacing-base) * 4); /* 16px */
+  --spacing-6: calc(var(--spacing-base) * 6); /* 24px */
+  --spacing-8: calc(var(--spacing-base) * 8); /* 32px */
+  --spacing-10: calc(var(--spacing-base) * 10); /* 40px */
+  --spacing-12: calc(var(--spacing-base) * 12); /* 48px */
+  --spacing-14: calc(var(--spacing-base) * 14); /* 56px */
+  --spacing-16: calc(var(--spacing-base) * 16); /* 64px */
+  --spacing-20: calc(var(--spacing-base) * 20); /* 80px */
+  --spacing-24: calc(var(--spacing-base) * 24); /* 96px */
+
+  /* Elevation / Shadows */
+  --elevation-sm: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+  --elevation-md:
+    0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --elevation-lg:
+    0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --elevation-xl:
+    0px 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0px 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Charts */
+  --chart-1: 193 43% 67%; /* nord8 */
+  --chart-2: 210 34% 63%; /* nord9 */
+  --chart-3: 213 32% 52%; /* nord10 */
+  --chart-4: 213 38% 42%; /* nord10 escuro */
+  --chart-5: 179 25% 65%; /* nord7 */
+
+  /* Radius — arquitetura fiel ao shadcn (base-nova/reka-nova/etc.):
+     --radius é o tamanho base global. Cada componente consome um token
+     específico (--radius-button, --radius-card, etc.) que no tema padrão
+     (Default) é igual ao --radius, mas em outros temas pode aplicar
+     multiplicadores diferentes (ver docs/shared/themes/<tema>.css).
+
+     Valor base = 0.625rem (10px) bate exatamente com shadcn default. */
+  --radius: 0.625rem; /* 10px — base global */
+  --radius-button: var(--radius); /* Default: 1× */
+  --radius-card: calc(var(--radius) * 1.4); /* Default: 14px */
+  --radius-badge: calc(var(--radius) * 2.6); /* Default: 26px */
+  --radius-input: var(--radius); /* Default: 1× */
+  --radius-alert: var(--radius); /* Default: 1× */
+
+  /* Dimension tokens — altura default de interativos (Button, Input, Select, Toggle, Badge...) */
+  /* Nota: Tailwind v4 consome via h-(--height-*) / size-(--size-*) / px-(--spacing-*) */
+  --height-badge: 1.25rem; /* 20px — h-5 (compacto, só para Badge) */
+  --height-xs: 1.5rem; /* 24px — h-6 default */
+  --height-sm: 1.75rem; /* 28px — h-7 */
+  --height-default: 2rem; /* 32px — h-8 */
+  --height-lg: 2.25rem; /* 36px — h-9 */
+  --height-xl: 2.5rem; /* 40px — h-10 */
+
+  --size-xs: 1.5rem; /* 24px — size-6 */
+  --size-sm: 1.75rem; /* 28px — size-7 */
+  --size-default: 2rem; /* 32px — size-8 */
+  --size-lg: 2.25rem; /* 36px — size-9 */
+  --size-xl: 2.5rem; /* 40px — size-10 */
+
+  --spacing-btn-x: 0.625rem; /* 10px — px-2.5 default */
+  --spacing-btn-x-sm: 0.625rem;
+  --spacing-btn-x-lg: 0.625rem;
+
+  /* Stroke (para variantes com borda visível) */
+  --border-width-default: 1px;
+
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --transition-slow: 500ms;
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-index */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+
+  /* Sidebar */
+  --sidebar: 218 27% 92%; /* nord5 */
+  --sidebar-foreground: 220 16% 22%; /* nord0 */
+  --sidebar-primary: 213 38% 42%; /* primary */
+  --sidebar-primary-foreground: 218 27% 94%;
+  --sidebar-accent: 193 43% 67%; /* nord8 */
+  --sidebar-accent-foreground: 220 16% 22%;
+  --sidebar-border: 219 28% 88%; /* nord4 */
+  --sidebar-ring: 213 38% 42%;
+}
+
+/* ── Dark mode ────────────────────────────────────────────────────────────── */
+.dark {
+  /* Surfaces — Nord Polar Night */
+  --background: 220 16% 22%; /* nord0 */
+  --foreground: 218 27% 94%; /* nord6 */
+  --card: 222 16% 28%; /* nord1 */
+  --card-foreground: 218 27% 94%;
+  --popover: 222 16% 28%; /* nord1 */
+  --popover-foreground: 218 27% 94%;
+  /* Brand / Interactive — Nord Frost (claro sobre escuro) */
+  --primary: 193 43% 67%; /* nord8 */
+  --primary-foreground: 220 16% 22%; /* nord0 */
+  --secondary: 220 17% 32%; /* nord2 */
+  --secondary-foreground: 218 27% 94%;
+  --muted: 220 17% 32%; /* nord2 */
+  --muted-foreground: 219 28% 88%; /* nord4 */
+  --accent: 220 16% 36%; /* nord3 */
+  --accent-foreground: 218 27% 94%;
+  /* Feedback — Nord Aurora (claras p/ contraste sobre fundo escuro) */
+  --destructive: 354 55% 62%; /* nord11 clareado */
+  --destructive-foreground: 220 16% 14%;
+  --success: 92 28% 65%; /* nord14 */
+  --success-foreground: 220 16% 14%;
+  --warning: 40 71% 73%; /* nord13 */
+  --warning-foreground: 220 16% 14%;
+  --info: 210 34% 63%; /* nord9 */
+  --info-foreground: 220 16% 14%;
+  --border: 220 16% 36%; /* nord3 */
+  --input: 220 16% 36%; /* nord3 */
+  --input-background: 220 16% 22%; /* nord0 */
+  --ring: 193 43% 67%; /* nord8 */
+  --ring-offset-color: 220 16% 22%;
+  --elevation-sm: 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+  --elevation-md:
+    0px 4px 6px -1px rgba(0, 0, 0, 0.3), 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --elevation-lg:
+    0px 10px 15px -3px rgba(0, 0, 0, 0.3), 0px 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --elevation-xl:
+    0px 20px 25px -5px rgba(0, 0, 0, 0.3), 0px 10px 10px -5px rgba(0, 0, 0, 0.1);
+  --sidebar: 222 16% 28%; /* nord1 */
+  --sidebar-foreground: 218 27% 94%; /* nord6 */
+  --sidebar-primary: 193 43% 67%; /* nord8 */
+  --sidebar-primary-foreground: 220 16% 22%;
+  --sidebar-accent: 220 16% 36%; /* nord3 */
+  --sidebar-accent-foreground: 218 27% 94%;
+  --sidebar-border: 220 16% 36%; /* nord3 */
+  --sidebar-ring: 193 43% 67%;
+}
