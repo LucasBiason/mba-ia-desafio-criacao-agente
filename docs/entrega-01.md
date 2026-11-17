@@ -80,6 +80,17 @@ Antes de publicar, acrescentar os resultados da avaliação da branch candidata,
 - Git diff --check aprovado e os cinco arquivos de dados permanecem idênticos ao HEAD.
 - Varredura dos arquivos candidatos confirmou ausência dos segredos gerados pelo ambiente de QA e ausência de .env, caches, node_modules e dist.
 - O projeto de QA antigo tinha volumes com configuração diferente. A branch foi validada em volumes novos; a instância de uso em 8767 permaneceu disponível.
-- O Compose da branch de QA atende em 127.0.0.1:8768. Publicação autorizada pelo usuário, com commits por fase e tag v0.1.0. A URL da PR será registrada após confirmação remota.
+- O Compose da branch de QA atende em 127.0.0.1:8768. Publicação autorizada pelo usuário, com commits por fase e tag v0.1.0. PR #1 criada no fork LucasBiason. Tag v0.1.0 atribuída ao commit final do pacote, com merge pendente.
 
 - Chromium com API real da branch: login, todas as rotas administrativas e de morador, perfil e logout aprovados em 1440 e 390 px. Busca de RSV-4821 e fechamento dos detalhes da agenda aprovados nos dois tamanhos. Nenhuma exceção JavaScript ou transbordamento horizontal observado. O assistente mantém o aviso esperado de integração pendente.
+
+
+## Publicação pela sdd-delivery
+
+[PR #1](https://github.com/LucasBiason/mba-ia-desafio-criacao-agente/pull/1) aberta da branch feat/base-administrativa para main do fork LucasBiason. A entrega usa a versão 0.1.0 e tag anotada v0.1.0. A tag identifica o pacote submetido à revisão; o merge segue pendente.
+
+Os arquivos foram selecionados explicitamente por fase antes de cada commit. As verificações incluíram padrões de credenciais e JWTs, chaves privadas, caminhos pessoais, exclusões de configuração local e integridade dos dados iniciais. Não foram detectadas ocorrências nos candidatos. A varredura por padrões tem limites e não equivale a auditoria independente.
+
+Os quatro commits de conteúdo separam infraestrutura, API, interface e documentação. O commit posterior registra a publicação. Autor e committer usam exclusivamente a identidade de Lucas Biason configurada no Git; as mensagens não têm trailer de coautoria.
+
+O changelog segue Keep a Changelog, com Unreleased e 0.1.0, e a descrição da PR apresenta escopo, testes executados, referências e pendências. A skill foi aplicada pela leitura das instruções canônicas e execução dos comandos verificados. Não existe evidência de uma avaliação independente sdd-evaluate por item nesta entrega. Os critérios do agente e da avaliação acadêmica permanecem pendentes.
