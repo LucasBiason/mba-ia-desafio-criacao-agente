@@ -9,7 +9,7 @@
 
 - Tipo: comportamento.
 - Depende de: identidade e projeções existentes.
-- Ações: conferir web/src/app.jsx; services/identity/app.py contra cada cenário do PRD e preservar as rotas existentes.
+- Ações: conferir web/src/app.jsx; services/authentication/routers/authentication_router.py contra cada cenário do PRD e preservar as rotas existentes.
 - Testes: exercitar as jornadas dos critérios no desktop e celular, conferir chamadas e saída.
 - Critérios: F14-AC01, F14-AC02, F14-SEC01.
 

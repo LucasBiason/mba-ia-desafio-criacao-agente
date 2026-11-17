@@ -19,11 +19,11 @@ O navegador resolve a rota, carrega a identidade e chama as APIs existentes na m
 
 ## 3. Decisões técnicas
 
-Reutilizar o Shell e os componentes Synapse presentes no produto. As decisões foram observadas em web/src/admin.jsx; services/domain/app.py. A navegação por hash conserva os caminhos existentes. Falha de identidade limpa a sessão do navegador e exige nova entrada.
+Reutilizar o Shell e os componentes Synapse presentes no produto. As decisões foram observadas em web/src/admin.jsx; services/apartments/main.py. A navegação por hash conserva os caminhos existentes. Falha de identidade limpa a sessão do navegador e exige nova entrada.
 
 ## 4. Visão de componentes
 
-Implementação em web/src/admin.jsx; services/domain/app.py. A API fornece identidade e dados de domínio, o React resolve as páginas e os componentes apresentam carregamento, conteúdo e erro. Os links preservam nomes acessíveis e o foco usa os componentes existentes.
+Implementação em web/src/admin.jsx; services/apartments/main.py. A API fornece identidade e dados de domínio, o React resolve as páginas e os componentes apresentam carregamento, conteúdo e erro. Os links preservam nomes acessíveis e o foco usa os componentes existentes.
 
 ## 5. Contratos de interface
 

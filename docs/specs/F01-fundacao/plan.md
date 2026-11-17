@@ -28,3 +28,19 @@
 - Ações: preparar massa descartável e localizar as fronteiras que fornecem a prova para fundação executável.
 - Testes: Comparar estado e resposta da operação em volume isolado. Induzir concorrência quando a funcionalidade tiver disputa de escrita. Executar o procedimento aplicável a partir de uma instalação isolada e registrar componentes, saídas e condições não exercitadas.
 - Critérios: NFR02-AC01, NFR04-AC01.
+
+### SI01.4 — Integrar a fundação HTTP e o importador por API
+
+- Tipo: comportamento.
+- Depende de: composição e cadastros administrativos existentes.
+- Ações: instalar microservice-toolkit por dependência local empacotada, configurar os verificadores de identidade e implementar o importador administrativo por API.
+- Testes: executar testes unitários HTTP da biblioteca, nove casos integrados do domínio, importação e repetição em QA e prova de runtime.
+- Critérios: F01-AC04, F01-AC05.
+
+### SI01.5 — Separar serviços e impor as camadas FastAPI
+
+- Tipo: comportamento.
+- Depende de: SI01.4 e contratos de cadastros existentes.
+- Ações: separar os domínios em processos, adotar repositories SQLAlchemy, validators e serializers e centralizar health e documentação no toolkit.
+- Testes: executar o gate de camadas, conferir Swagger e OpenAPI dos serviços, repetir os contratos HTTP e comparar os dados após migrar e reiniciar.
+- Critérios: F01-AC06, F01-AC03, F01-AC04.

@@ -23,9 +23,16 @@ Usar versões numeradas e comparar a versão-base no momento da publicação. Es
 
 ## 4. Visão de componentes
 
-- Painel administrativo com editor, estado vigente e lista de versões.
-- Tela do morador com texto vigente e versão publicada.
-- Repositório de revisões com proteção contra conflito e importação inicial do Markdown.
+| Camada | Arquivo | Responsabilidade |
+| --- | --- | --- |
+| Router | services/settings/routers/regulation_router.py | Receber DTO e identidade e chamar o controller |
+| Controller | services/settings/controllers/regulation_controller.py | Coordenar validação, persistência e serialização |
+| Validator | services/settings/validators/regulation_validator.py | Verificar permissão e regras da operação |
+| Repository | services/settings/repositories/regulation_repository.py | Consultar e escrever com SQLAlchemy em transação |
+| Serializer | services/settings/serializers/regulation_serializer.py | Produzir DTO público sem campos internos |
+| Composição | services/settings/main.py | Montar routers, middleware, Swagger e health do toolkit |
+
+As schemas Pydantic validam tipo e formato. Validators não gravam e controllers não acessam Session ou engine. O repository aplica flush, locks e constraints conforme a operação. Falha faz rollback. A documentação OpenAPI declara os contratos de entrada, saída, erros e autenticação.
 
 ## 5. Contratos de interface
 

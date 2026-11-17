@@ -22,7 +22,7 @@ A referência de produto original é FR01. A correspondência dos critérios ant
 
 - **Dado** um clone com Docker e o cliente Compose e os dados iniciais
 - **Quando** o operador exercita o cenário descrito na verificação
-- **Então** a composição inicia as sete unidades e carrega a tela de login.
+- **Então** a composição inicia as onze unidades e carrega a tela de login.
 
 - **Dado** uma configuração obrigatória de autenticação ausente numa composição descartável
 - **Quando** o operador exercita o cenário descrito na verificação
@@ -36,11 +36,15 @@ A referência de produto original é FR01. A correspondência dos critérios ant
 
 | ID | Condição | Resultado esperado | Como verificar |
 | --- | --- | --- | --- |
-| F01-AC01 | Um clone com Docker e o cliente Compose e os dados iniciais | A composição inicia as sete unidades e carrega a tela de login | Validar o manifesto, subir a composição de teste, conferir serviços saudáveis e abrir a origem publicada |
+| F01-AC01 | Um clone com Docker e o cliente Compose e os dados iniciais | A composição inicia as onze unidades e carrega a tela de login | Validar o manifesto, subir a composição de teste, conferir serviços saudáveis e abrir a origem publicada |
 | F01-AC02 | Uma configuração obrigatória de autenticação ausente numa composição descartável | O Compose recusa a configuração ou a autenticação fica sem prontidão. A falha identifica a variável sem divulgar segredo | Omitir a configuração em sandbox e comparar status do serviço e saída sanitizada |
 | F01-AC03 | Uma edição persistida em volume existente | A edição continua após reiniciar e a carga inicial não a sobrescreve | Criar uma conta e alterar um cadastro, reiniciar os serviços e consultar os dois pelas mesmas APIs |
+| F01-AC04 | Uma aplicação criada pela biblioteca e uma chamada válida, recusada ou com erro | A resposta mantém correlação, falhas não expõem payloads e os logs contêm apenas os campos operacionais permitidos | Executar os testes HTTP da biblioteca e conferir os serviços com chamadas autenticadas |
+| F01-AC05 | Cadastros iniciais ausentes ou já importados e acesso administrativo válido | O importador usa as APIs e a repetição não duplica usuários, apartamentos ou áreas | Executar dados/importar_cadastros.py em ambiente de QA e comparar registros e JSONs antes e depois |
+| F01-AC06 | Serviços construídos com o padrão FastAPI e toolkit | Cada domínio tem camadas separadas, escritas ORM, health centralizado e documentação OpenAPI | Executar o gate de camadas e conferir health, Swagger e schemas dos oito serviços |
 
 A etapa de cada prova está identificada na [spec desta funcionalidade](../../specs/F01-fundacao/spec.md#7-estratégia-de-testes).
+
 
 ## Segurança
 

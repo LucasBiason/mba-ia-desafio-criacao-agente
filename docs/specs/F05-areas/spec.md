@@ -23,9 +23,16 @@ Representar preços por `fee_cents` inteiro entre 0 e 100000000. O ID de rota es
 
 ## 4. Visão de componentes
 
-- Formulário administrativo com identificador, nome e taxa.
-- API de escrita administrativa e catálogo autenticado de leitura.
-- Repositório de áreas e validação de chave, taxa e referências.
+| Camada | Arquivo | Responsabilidade |
+| --- | --- | --- |
+| Router | services/common_areas/routers/area_router.py | Receber DTO e identidade e chamar o controller |
+| Controller | services/common_areas/controllers/area_controller.py | Coordenar validação, persistência e serialização |
+| Validator | services/common_areas/validators/area_validator.py | Verificar permissão e regras da operação |
+| Repository | services/common_areas/repositories/area_repository.py | Consultar e escrever com SQLAlchemy em transação |
+| Serializer | services/common_areas/serializers/area_serializer.py | Produzir DTO público sem campos internos |
+| Composição | services/common_areas/main.py | Montar routers, middleware, Swagger e health do toolkit |
+
+As schemas Pydantic validam tipo e formato. Validators não gravam e controllers não acessam Session ou engine. O repository aplica flush, locks e constraints conforme a operação. Falha faz rollback. A documentação OpenAPI declara os contratos de entrada, saída, erros e autenticação.
 
 ## 5. Contratos de interface
 

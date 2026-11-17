@@ -31,10 +31,10 @@ A implementação será avaliada por cinco comportamentos.
 
 ## Abrir o portal
 
-Com Docker Compose, Python 3 e a partir da raiz do projeto:
+Com Docker Compose, Make, Python 3 e a partir da raiz do projeto:
 
 ```sh
-./scripts/start.sh
+make up
 ```
 
 Abra [o portal local](http://127.0.0.1:8767/). A primeira execução grava senhas de demonstração geradas no arquivo local `.env`. A instalação usa o mesmo arquivo nas próximas execuções.
@@ -45,8 +45,10 @@ Abra [o portal local](http://127.0.0.1:8767/). A primeira execução grava senha
 | Administração | `admin@aurora.test` | `DEMO_ADMIN_PASSWORD` |
 | Moradora responsável pela unidade 101 | `morador@aurora.test` | `DEMO_RESIDENT_PASSWORD` |
 
-Para consultar os contêineres, use `docker compose ps`. Para parar a instância mantendo os registros, use `docker compose stop`. Use `AURORA_PORT=8780 ./scripts/start.sh` se quiser outra porta local.
+Para consultar os contêineres, use `make ps`. Para parar a instância mantendo os registros, use `make stop`. Use `AURORA_PORT=8780 make up` se quiser outra porta local.
 
+
+Para desenvolvimento com recarga automática, use `make up ENV=dev`. O Compose base usa o estágio `production` do Dockerfile; o override em `configs/compose.dev.yaml` seleciona `development`, monta o código e usa o comando `dev` do entrypoint. Use o mesmo `ENV` nos comandos seguintes. `make help` lista as operações. `make down` preserva os volumes. Os comandos de teste requerem uv instalado.
 
 ## Documentação
 
@@ -74,15 +76,35 @@ Os cinco arquivos de dados iniciais ficam em `dados/`. Identidade e condomínio 
 
 ## Reexecutar os testes da base
 
-Na instância local do playground, use `python3 scripts/seed-agenda.py add` para preencher vários meses do calendário com reservas sintéticas. Cada uma aparece com a indicação **Teste**. Use `python3 scripts/seed-agenda.py remove` para retirar a massa gerada e voltar aos registros anteriores.
+Na instância local do playground, use `make seed-agenda` para preencher vários meses do calendário com reservas sintéticas. Cada uma aparece com a indicação **Teste**. Use `make unseed-agenda` para retirar a massa gerada e voltar aos registros anteriores.
 
 Use um projeto Compose separado para deixar os dados de exercício fora da instância de uso:
 
 ```sh
-COMPOSE_PROJECT_NAME=residencial-aurora-qa AURORA_PORT=8768 ./scripts/start.sh
-python3 -B tests/test_api.py
-python3 -B tests/test_runtime.py
-docker compose -p residencial-aurora-qa down
+COMPOSE_PROJECT_NAME=residencial-aurora-qa AURORA_PORT=8768 make up
+COMPOSE_PROJECT_NAME=residencial-aurora-qa AURORA_PORT=8768 make test
+COMPOSE_PROJECT_NAME=residencial-aurora-qa AURORA_PORT=8768 make test-runtime
+COMPOSE_PROJECT_NAME=residencial-aurora-qa make down
 ```
 
 Os testes verificam a API servida pelo proxy do portal. O modo de avaliação do desafio e a chamada ao modelo pertencem ao escopo de integração do agente.
+
+## Biblioteca dos serviços
+
+Os serviços usam microservice-toolkit para criar aplicações FastAPI, padronizar erros, propagar X-Request-ID e registrar logs JSON. O pacote fica em packages/microservice-toolkit para que um clone do fork possa construir as imagens sem depender de outro checkout. O serviço de identidade mantém o adaptador específico das APIs do Aurora em services/authentication/client.py.
+
+Os testes de integração do domínio ficam em services/apartments/tests/integration/. A biblioteca independente tem seus próprios testes no projeto microservice-toolkit.
+
+## Importação administrativa
+
+Execute python3 dados/importar_cadastros.py --url http://127.0.0.1:8767 para importar cadastros ausentes de usuários moradores, apartamentos e áreas pelas APIs. A senha administrativa é solicitada no terminal. Registros existentes são conservados. O comando pode ser reexecutado após falha parcial.
+
+Os registros iniciais de reservas, autorizações e regulamento continuam carregados pela inicialização do domínio, preservando as fixtures do desafio. Os endpoints de criação por agente permanecem pendentes.
+
+## Serviços e camadas
+
+As aplicações FastAPI ficam em services/authentication, users, apartments, common_areas, agenda, visits, settings e agent. Cada aplicação tem composição em main.py e camadas de routers, controllers, validators, repositories ORM, models, schemas e serializers. O toolkit registra /health e configura Swagger e OpenAPI.
+
+Cada serviço tem documentação em /services/NOME/docs no portal. Os nomes são auth, users, apartments, common-areas, agenda, visits, settings e agent. Os testes integrados ficam em services/apartments/tests/integration.
+
+Os serviços de negócio usam inicialmente o banco PostgreSQL de condomínio existente para preservar os dados e constraints. A separação física dos bancos por serviço exige uma migração adicional.

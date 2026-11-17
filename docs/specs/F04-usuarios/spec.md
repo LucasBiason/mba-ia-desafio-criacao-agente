@@ -23,9 +23,16 @@ Manter contas desativadas para preservar vínculos. Usuários `admin` gerenciam 
 
 ## 4. Visão de componentes
 
-- Formulário administrativo de criação e edição de contas.
-- Serviço `users` valida papel, email, alterações permitidas e estado da conta.
-- Banco de identidade serializa operações de cadastro concorrentes e retém o identificador público.
+| Camada | Arquivo | Responsabilidade |
+| --- | --- | --- |
+| Router | services/users/routers/account_router.py | Receber DTO e identidade e chamar o controller |
+| Controller | services/users/controllers/account_controller.py | Coordenar validação, persistência e serialização |
+| Validator | services/users/validators/account_validator.py | Verificar permissão e regras da operação |
+| Repository | services/users/repositories/account_repository.py | Consultar e escrever com SQLAlchemy em transação |
+| Serializer | services/users/serializers/account_serializer.py | Produzir DTO público sem campos internos |
+| Composição | services/users/main.py | Montar routers, middleware, Swagger e health do toolkit |
+
+As schemas Pydantic validam tipo e formato. Validators não gravam e controllers não acessam Session ou engine. O repository aplica flush, locks e constraints conforme a operação. Falha faz rollback. A documentação OpenAPI declara os contratos de entrada, saída, erros e autenticação.
 
 ## 5. Contratos de interface
 

@@ -9,7 +9,7 @@
 
 - Tipo: comportamento.
 - Depende de: identidade e projeções existentes.
-- Ações: conferir web/src/admin.jsx; services/domain/app.py contra cada cenário do PRD e preservar as rotas existentes.
+- Ações: conferir web/src/admin.jsx; services/apartments/main.py contra cada cenário do PRD e preservar as rotas existentes.
 - Testes: exercitar as jornadas dos critérios no desktop e celular, conferir chamadas e saída.
 - Critérios: F12-AC01, F12-AC02, F12-SEC01.
 

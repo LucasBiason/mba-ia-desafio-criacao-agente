@@ -6,5 +6,7 @@
 web
 docs
 tests
-scripts
+configs
 dados
+
+**/tests

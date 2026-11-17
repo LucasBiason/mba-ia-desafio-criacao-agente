@@ -25,10 +25,16 @@ As tools operam no contexto verificado da sessão. Cada apartamento tem até um 
 
 ## 4. Visão de componentes
 
-- Chat React apresenta sessão, unidade selecionada, entrada e mensagem de indisponibilidade.
-- API de condomínio autentica, abre sessão, verifica titularidade e encaminha ao limite do agente.
-- Serviço privado do agente dá lugar ao futuro Runner, estrutura de especialistas e política de consulta.
-- Adaptadores futuros mapeiam eventos, ferramentas autorizadas, pendências e confirmação para as APIs de produto e acadêmica.
+| Camada | Arquivo | Responsabilidade |
+| --- | --- | --- |
+| Router | services/agent/routers/chat_router.py | Receber DTO e identidade e chamar o controller |
+| Controller | services/agent/controllers/chat_controller.py | Coordenar validação, persistência e serialização |
+| Validator | services/agent/validators/chat_validator.py | Verificar permissão e regras da operação |
+| Repository | services/agent/repositories/chat_repository.py | Consultar e escrever com SQLAlchemy em transação |
+| Serializer | services/agent/serializers/chat_serializer.py | Produzir DTO público sem campos internos |
+| Composição | services/agent/main.py | Montar routers, middleware, Swagger e health do toolkit |
+
+As schemas Pydantic validam tipo e formato. Validators não gravam e controllers não acessam Session ou engine. O repository aplica flush, locks e constraints conforme a operação. Falha faz rollback. A documentação OpenAPI declara os contratos de entrada, saída, erros e autenticação.
 
 ## 5. Contratos de interface
 

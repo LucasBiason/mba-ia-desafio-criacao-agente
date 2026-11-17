@@ -23,10 +23,16 @@ Aplicar papel `admin` ou `resident` no servidor, além de checar sessão vigente
 
 ## 4. Visão de componentes
 
-- Tela de login recebe email e senha e direciona para a área do perfil retornado.
-- `auth` autentica, assina, revoga e resolve a identidade atual.
-- Dependências de autenticação na API retornam erro de identidade ou indisponibilidade antes de executar ações.
-- Roteamento do frontend reduz navegação indevida. A autorização efetiva é aplicada na API.
+| Camada | Arquivo | Responsabilidade |
+| --- | --- | --- |
+| Router | services/authentication/routers/authentication_router.py | Receber DTO e identidade e chamar o controller |
+| Controller | services/authentication/controllers/authentication_controller.py | Coordenar validação, persistência e serialização |
+| Validator | services/authentication/validators/authentication_validator.py | Verificar permissão e regras da operação |
+| Repository | services/authentication/repositories/session_repository.py | Consultar e escrever com SQLAlchemy em transação |
+| Serializer | services/authentication/serializers/authentication_serializer.py | Produzir DTO público sem campos internos |
+| Composição | services/authentication/main.py | Montar routers, middleware, Swagger e health do toolkit |
+
+As schemas Pydantic validam tipo e formato. Validators não gravam e controllers não acessam Session ou engine. O repository aplica flush, locks e constraints conforme a operação. Falha faz rollback. A documentação OpenAPI declara os contratos de entrada, saída, erros e autenticação.
 
 ## 5. Contratos de interface
 

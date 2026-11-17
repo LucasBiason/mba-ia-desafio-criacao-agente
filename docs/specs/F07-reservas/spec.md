@@ -23,10 +23,16 @@ O calendário abre no mês atual, com seleção de todas as áreas ou de uma ár
 
 ## 4. Visão de componentes
 
-- Calendário administrativo com seletor de área, navegação mensal, busca por código e detalhes do dia.
-- Jornada do morador com seleção de unidade e lista de reservas próprias.
-- API e armazenamento de domínio, com importação dos dados iniciais e projeção de leitura.
-- Prática futura: tool de consulta, tool de reserva e tool de cancelamento delimitadas à sessão.
+| Camada | Arquivo | Responsabilidade |
+| --- | --- | --- |
+| Router | services/agenda/routers/reservation_router.py | Receber DTO e identidade e chamar o controller |
+| Controller | services/agenda/controllers/reservation_controller.py | Coordenar validação, persistência e serialização |
+| Validator | services/agenda/validators/reservation_validator.py | Verificar permissão e regras da operação |
+| Repository | services/agenda/repositories/reservation_repository.py | Consultar e escrever com SQLAlchemy em transação |
+| Serializer | services/agenda/serializers/reservation_serializer.py | Produzir DTO público sem campos internos |
+| Composição | services/agenda/main.py | Montar routers, middleware, Swagger e health do toolkit |
+
+As schemas Pydantic validam tipo e formato. Validators não gravam e controllers não acessam Session ou engine. O repository aplica flush, locks e constraints conforme a operação. Falha faz rollback. A documentação OpenAPI declara os contratos de entrada, saída, erros e autenticação.
 
 ## 5. Contratos de interface
 

@@ -6,8 +6,7 @@ O formato segue Keep a Changelog e as versões seguem o versionamento semântico
 ## [Unreleased]
 
 ### Added
-
-- Ambiente Docker Compose com portal React, serviços de autenticação, usuários, condomínio e fronteira do agente, além de dois bancos PostgreSQL.
+- Ambiente Docker Compose com portal React, oito serviços por domínio e fronteira do agente, além de dois bancos PostgreSQL.
 - Login, saída, consulta de perfil e gestão de contas dos tipos Administração e Morador.
 - Cadastros administrativos de apartamentos e áreas, com vínculos de responsabilidade e preservação do histórico.
 - Agenda mensal por área com busca por código, detalhes do dia e edição de horários de reservas e visitas.
@@ -18,13 +17,17 @@ O formato segue Keep a Changelog e as versões seguem o versionamento semântico
 - Testes HTTP e de runtime para validar permissões e persistência.
 
 ### Changed
-
+- Makefile como interface operacional, entrypoint com comandos explícitos e Dockerfile com estágios de desenvolvimento e produção.
+- Compose de desenvolvimento com recarga automática e preservação dos volumes existentes.
+- Preparação local em configs/ e massa sintética em dados/, removendo a pasta scripts/ da raiz.
+- Serviços separados por domínio com routers, controllers, validators, repositories SQLAlchemy e serializers.
+- Health centralizado no toolkit e Swagger por serviço, mantendo os caminhos públicos do portal.
+- Fundação HTTP compartilhada com microservice-toolkit, logs estruturados, correlação e autenticação configurável.
+- Testes de integração localizados na aplicação de domínio e importador administrativo por API em dados/.
 - Logo oficial do projeto aplicado ao login e aos menus do portal, incluindo o modo compacto e a navegação móvel.
-
 - Enunciado preservado em docs/enunciado.md e README reorganizado com identidade visual e instruções de execução.
 
 ### Security
-
 - Validação de JWT e autorização por papel e unidade nas APIs privadas.
 - Proteção da última conta administrativa ativa, recusa de chamadas internas pelo proxy e bloqueio das APIs durante indisponibilidade da autenticação.
 - Configuração local gerada fora do Git e preservação dos cinco arquivos de dados iniciais.

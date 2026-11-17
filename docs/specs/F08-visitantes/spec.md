@@ -23,9 +23,16 @@ A edição administrativa atualiza apenas os horários de uma autorização exis
 
 ## 4. Visão de componentes
 
-- Visualização de autorizações administrativas e da unidade do morador.
-- API de projeções baseada em fixture e armazenamento do domínio.
-- Prática futura: especialista de visitantes e ação validada com o serviço de confirmações.
+| Camada | Arquivo | Responsabilidade |
+| --- | --- | --- |
+| Router | services/visits/routers/visit_router.py | Receber DTO e identidade e chamar o controller |
+| Controller | services/visits/controllers/visit_controller.py | Coordenar validação, persistência e serialização |
+| Validator | services/visits/validators/visit_validator.py | Verificar permissão e regras da operação |
+| Repository | services/visits/repositories/visit_repository.py | Consultar e escrever com SQLAlchemy em transação |
+| Serializer | services/visits/serializers/visit_serializer.py | Produzir DTO público sem campos internos |
+| Composição | services/visits/main.py | Montar routers, middleware, Swagger e health do toolkit |
+
+As schemas Pydantic validam tipo e formato. Validators não gravam e controllers não acessam Session ou engine. O repository aplica flush, locks e constraints conforme a operação. Falha faz rollback. A documentação OpenAPI declara os contratos de entrada, saída, erros e autenticação.
 
 ## 5. Contratos de interface
 

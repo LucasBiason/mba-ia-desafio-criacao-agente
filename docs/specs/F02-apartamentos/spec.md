@@ -23,9 +23,16 @@ O número é único e normalizado em maiúsculas, com até dez dígitos e uma le
 
 ## 4. Visão de componentes
 
-- Tela administrativa consulta a tabela, cadastra unidades e gerencia o vínculo com uma conta.
-- Tela de morador consulta suas unidades e permite mudar a unidade ativa para novas operações.
-- Serviço de condomínio valida papel, número, conta e dependências antes de persistir.
+| Camada | Arquivo | Responsabilidade |
+| --- | --- | --- |
+| Router | services/apartments/routers/apartment_router.py | Receber DTO e identidade e chamar o controller |
+| Controller | services/apartments/controllers/apartment_controller.py | Coordenar validação, persistência e serialização |
+| Validator | services/apartments/validators/apartment_validator.py | Verificar permissão e regras da operação |
+| Repository | services/apartments/repositories/apartment_repository.py | Consultar e escrever com SQLAlchemy em transação |
+| Serializer | services/apartments/serializers/apartment_serializer.py | Produzir DTO público sem campos internos |
+| Composição | services/apartments/main.py | Montar routers, middleware, Swagger e health do toolkit |
+
+As schemas Pydantic validam tipo e formato. Validators não gravam e controllers não acessam Session ou engine. O repository aplica flush, locks e constraints conforme a operação. Falha faz rollback. A documentação OpenAPI declara os contratos de entrada, saída, erros e autenticação.
 
 ## 5. Contratos de interface
 
