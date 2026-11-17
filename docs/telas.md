@@ -67,3 +67,7 @@ O [componente de calendário mensal](../web/src/calendar.jsx) recebe o mês (`YY
 3. **Fronteira do agente.** Envie uma pergunta pela sessão existente e observe a indisponibilidade. A [prática guiada](roteiro-agente.md) começa conectando a primeira consulta real.
 
 [Arquitetura](arquitetura.md) · [Specs e contratos](specs/index.md) · [Provas executadas](validacao.md)
+
+## Marca do portal
+
+Login, barra lateral e menu móvel usam o mesmo logo de branding/logo.svg, distribuído em web/public/aurora-logo.svg para o build do frontend. O link da marca preserva seu nome acessível e permanece visível no modo compacto.

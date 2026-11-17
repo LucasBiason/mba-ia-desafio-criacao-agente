@@ -5,6 +5,10 @@ O formato segue Keep a Changelog e as versões seguem o versionamento semântico
 
 ## [Unreleased]
 
+### Changed
+
+- Logo oficial do projeto aplicado ao login e aos menus do portal, incluindo o modo compacto e a navegação móvel.
+
 ## [0.1.0] - 2026-11-17
 
 ### Added

@@ -132,7 +132,7 @@ details + details { border-top: 1px solid var(--line); padding-top: .8rem; }
   border-radius: .85rem;
   background: var(--brand);
 }
-.brand-mark span, .area-mark span {
+.area-mark span {
   display: block;
   width: 1.22rem;
   height: .66rem;
@@ -142,7 +142,7 @@ details + details { border-top: 1px solid var(--line); padding-top: .8rem; }
   box-shadow: 0 4px 0 -2px var(--accent-warm);
 }
 .brand-light { color: white; }
-.brand-light .brand-mark { border: 1px solid #ffffff46; background: #ffffff12; }
+.brand-light .brand-mark { background: transparent; }
 .brand-light small { color: #d2e0d7; }
 
 .login { display: grid; grid-template-columns: 1.06fr 1fr; min-height: 100vh; }

@@ -13,7 +13,7 @@ export const timeLabel = date => {
 
 export function Brand({ light = false, onNavigate }) {
   return <a className={"brand" + (light ? " brand-light" : "")} href="#/inicio" aria-label="Residencial Aurora, início" onClick={onNavigate}>
-    <span className="brand-mark" aria-hidden="true"><span /></span>
+    <img className="brand-mark" src="/aurora-logo.svg" alt="" width="128" height="128" />
     <span><strong>Aurora</strong><small>Residencial</small></span>
   </a>;
 }
