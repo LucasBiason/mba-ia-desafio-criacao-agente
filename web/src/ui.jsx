@@ -1,4 +1,4 @@
-import auroraLogo from "./assets/aurora-logo.svg";
+import auroraLogo from "./assets/aurora-logo.svg?no-inline";
 import { Button } from "./synapse/Button";
 import { Alert } from "./synapse/Alert";
 
