@@ -16,7 +16,7 @@ A referência de produto original é FR05. A correspondência dos critérios ant
 
 - Depende de: F03.
 - Fornece: Catálogo autenticado de áreas e frequência de taxa para consulta e futura operação do agente.
-- Integração: React usa `condo` para gestão e leitura. A persistência de áreas fica no banco do domínio. O catálogo autenticado alimenta filtros de agenda e seleção de área em atividades futuras do morador.
+- Integração: React usa `common-areas` para gestão e leitura. A persistência de áreas fica no banco do domínio. O catálogo autenticado alimenta filtros de agenda e seleção de área em atividades futuras do morador.
 
 ## Comportamento esperado
 

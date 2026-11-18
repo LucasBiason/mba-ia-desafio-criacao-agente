@@ -9,7 +9,7 @@ prd_source: docs/prd/functional/F02-apartamentos.md
 
 ## 1. Visão técnica
 
-O serviço `condo` mantém as unidades e recebe um identificador público de morador. Cada apartamento tem no máximo um usuário do tipo `resident`, que representa o proprietário e responsável. Um morador pode responder por mais de uma unidade. Outros ocupantes ficam fora do modelo. A identidade obtida pelo backend valida o perfil; cada sessão seleciona um único apartamento autorizado.
+O serviço `apartments` mantém as unidades e recebe um identificador público de morador. Cada apartamento tem no máximo um usuário do tipo `resident`, que representa o proprietário e responsável. Um morador pode responder por mais de uma unidade. Outros ocupantes ficam fora do modelo. A identidade obtida pelo backend valida o perfil; cada sessão de chat fixa uma única unidade autorizada; as consultas do portal informam a unidade selecionada.
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F02](../../prd/functional/F02-apartamentos.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
@@ -19,7 +19,7 @@ O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entreg
 
 ## 2. Impacto arquitetural
 
-Cadastro passa pelo proxy e pelo guard de identidade do serviço de condomínio. A verificação de conta elegível consulta `users` por fronteira interna. Reservas, visitantes e futuros pedidos de agente se referem à unidade registrada no próprio domínio.
+Cadastro passa pelo proxy e pelo middleware de identidade de apartamentos. A verificação de conta elegível consulta `users` por fronteira interna. Reservas, visitantes e futuros pedidos de agente se referem à unidade registrada no próprio domínio.
 
 ## 3. Decisões técnicas
 

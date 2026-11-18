@@ -9,7 +9,7 @@ prd_source: docs/prd/functional/F01-fundacao.md
 
 ## 1. Visão técnica
 
-Docker Compose parte de imagens versionadas e levanta o frontend React/Vite, o proxy Nginx, os serviços FastAPI de autenticação, usuários e condomínio, o limite de integração do agente e as instâncias PostgreSQL de identidade e domínio. A base funciona com as fixtures do projeto e uma configuração de desenvolvimento local.
+Docker Compose parte de imagens versionadas e levanta o frontend React/Vite, o proxy Nginx, oito aplicações FastAPI por domínio, incluindo a fronteira do agente e as instâncias PostgreSQL de identidade e domínio. A base funciona com as fixtures do projeto e uma configuração de desenvolvimento local.
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F01](../../prd/functional/F01-fundacao.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
@@ -19,26 +19,26 @@ O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entreg
 
 ## 2. Impacto arquitetural
 
-O navegador chama o proxy em uma única origem. O proxy direciona autenticação, usuários e condomínio para serviços na rede do Compose. As bases e a fronteira interna do agente ficam na rede privada. A porta de avaliação acadêmica tem sua própria entrada futura, sem compartilhar o proxy de produto.
+O navegador chama o proxy em uma única origem. O proxy encaminha autenticação, usuários, apartamentos, áreas, agenda, visitas, configurações e chat para suas aplicações na rede do Compose. As bases e a fronteira interna do agente ficam na rede privada. A porta de avaliação acadêmica tem sua própria entrada futura, sem compartilhar o proxy de produto.
 
 ## 3. Decisões técnicas
 
 Decisões arquiteturais relacionadas: [ADR-0001](../../adr/ADR-0001-servicos-por-dominio-e-camadas.md), [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md), [ADR-0004](../../adr/ADR-0004-toolkit-e-operacao-dos-servicos.md), [ADR-0006](../../adr/ADR-0006-persistencia-compartilhada-da-base.md) (proposto).
 
-Usar dois bancos de fronteira, identidade e condomínio, para que o serviço de domínio consuma a identidade validada e não manipule a tabela de contas. A base inicia sem credencial de modelo. A montagem das fixtures é somente leitura e a carga inicial é idempotente.
+Usar dois bancos de fronteira, identidade e condomínio, preservados provisoriamente para que os serviços de negócio consumam a identidade validada sem manipular a tabela de contas. O isolamento físico por serviço permanece proposto no ADR-0006. A base inicia sem credencial de modelo. A montagem das fixtures é somente leitura e a carga inicial é idempotente.
 
 ## 4. Visão de componentes
 
 - `web`: empacota React/Vite e Nginx e publica a porta local da interface.
 - `auth` e `users`: expõem login, introspecção e gestão de contas sobre `identity-db`.
-- `condo`: mantém as projeções do condomínio em `condo-db`.
+- `apartments`, `common-areas`, `agenda`, `visits` e `settings`: mantêm seus recursos sobre `condo-db`, com camadas e autorização por domínio.
 - `agent`: fornece o ponto de integração para a prática, com prontidão operacional própria.
 
 ## 5. Contratos de interface
 
 A operação é exposta pelo Makefile, com `ENV=local|dev`. O Dockerfile usa estágios `development` e `production`; o entrypoint despacha `dev|runserver|prod|test` com `exec`. O modo dev usa `configs/compose.dev.yaml` com recarga automática. A preparação preserva `.env` existente, e `make down` preserva volumes. Não criar pasta `scripts` na raiz.
 
-Execute `make up` para gerar a configuração local, construir e iniciar os serviços. Use `docker compose config -q` para conferir o manifesto com essa configuração e abra `http://127.0.0.1:8767/`. `GET /api/health` passa pelo proxy até a API de condomínio. A prontidão de cada dependência é inspecionável por `docker compose ps`. A porta acadêmica 8000 fica fora da composição base.
+Execute `make up` para gerar a configuração local, construir e iniciar os serviços. Use `docker compose config -q` para conferir o manifesto com essa configuração e abra `http://127.0.0.1:8767/`. `GET /api/health` passa pelo proxy até o health do toolkit na aplicação de apartamentos. A prontidão de cada dependência é inspecionável por `docker compose ps`. A porta acadêmica 8000 fica fora da composição base.
 
 Configuração obrigatória ausente ou banco inacessível impedem prontidão da dependência. O diagnóstico indica a falha sem imprimir credenciais. Uma indisponibilidade da fronteira do agente afeta a mensagem de chat e deixa os cadastros disponíveis.
 

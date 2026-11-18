@@ -18,7 +18,7 @@ A referência de produto original é FR08. A correspondência dos critérios ant
 
 - Depende de: F02.
 - Fornece: Projeções de visita separadas por unidade e procedimento para futura gravação após aprovação explícita.
-- Integração: Consulta de visitante chega a `condo` e combina identidade com vínculo. A aula liga a ação de visitante à mesma infraestrutura de confirmações de reservas pagas. Uma ação pendente carrega somente o nome, a data e o apartamento já validado.
+- Integração: Consulta de visitante chega a `visits` e combina identidade com vínculo. A aula liga a ação de visitante à mesma infraestrutura de confirmações de reservas pagas. Uma ação pendente carrega somente o nome, a data e o apartamento já validado.
 
 ## Comportamento esperado
 

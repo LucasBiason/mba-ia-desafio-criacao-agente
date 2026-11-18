@@ -19,7 +19,7 @@ O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entreg
 
 ## 2. Impacto arquitetural
 
-React usa `condo` para gestão e leitura. A persistência de áreas fica no banco do domínio. O catálogo autenticado alimenta filtros de agenda e seleção de área em atividades futuras do morador.
+React usa a aplicação `common-areas` para gestão e leitura. A persistência de áreas fica no banco do domínio. O catálogo autenticado alimenta filtros de agenda e seleção de área em atividades futuras do morador.
 
 ## 3. Decisões técnicas
 

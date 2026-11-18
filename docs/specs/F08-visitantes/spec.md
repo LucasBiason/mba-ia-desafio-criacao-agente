@@ -19,7 +19,7 @@ O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entreg
 
 ## 2. Impacto arquitetural
 
-Consulta de visitante chega a `condo` e combina identidade com vínculo. A aula liga a ação de visitante à mesma infraestrutura de confirmações de reservas pagas. Uma ação pendente carrega somente o nome, a data e o apartamento já validado.
+Consulta de visitante chega a `visits` e combina identidade com vínculo. A aula liga a ação de visitante à mesma infraestrutura de confirmações de reservas pagas. Uma ação pendente carrega somente o nome, a data e o apartamento já validado.
 
 ## 3. Decisões técnicas
 

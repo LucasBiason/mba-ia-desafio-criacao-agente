@@ -44,7 +44,7 @@ As schemas Pydantic validam tipo e formato. Validators não gravam e controllers
 
 GET e POST em `/api/admin/users`. O cadastro recebe `name`, `email`, `password` e `role`. PATCH `/api/admin/users/{id}` atualiza os campos permitidos, incluindo `active`. A senha nova tem entre 12 e 256 caracteres. GET por ID devolve a projeção permitida. A resposta expõe `id`, `name`, `email`, `role` e `active`. O perfil do usuário corrente vem de `/api/auth/me`.
 
-Email duplicado causa conflito. Campo inválido retorna mensagem por campo. Elevação indevida de papel retorna 403 e deixa a conta original intacta. Conta desativada perde acesso validado.
+Email duplicado causa conflito. Campo inválido retorna mensagem por campo. Alterar o papel fixado no cadastro retorna 409 ROLE_IMMUTABLE e deixa a conta original intacta. Operador sem papel administrativo recebe 403 antes da alteração. Conta desativada perde acesso validado.
 
 Entradas de identidade com caractere nulo são recusadas com 422 antes do repository. Email e nome seguem sua normalização explícita; a senha conserva espaços e conteúdo sem normalização implícita. Os testes de regressão estão em services/authentication/tests/test_identity_inputs.py e nas chamadas HTTP com dados sintéticos.
 

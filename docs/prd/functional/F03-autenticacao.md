@@ -16,7 +16,7 @@ A referência de produto original é FR03. A correspondência dos critérios ant
 
 - Depende de: F01.
 - Fornece: Login, usuário atual, logout, introspecção e contexto verificado de papel para serviços consumidores.
-- Integração: O navegador se autentica pelo proxy. `users` e `condo` reenviam o bearer ao serviço de autenticação por conexão interna e aplicam também as permissões específicas do recurso. JWT assinado e revogação ficam sob a mesma autoridade. Apenas a identidade deriva o papel confiável.
+- Integração: O navegador se autentica pelo proxy. Os serviços consumidores reenviam o bearer ao serviço de autenticação por conexão interna e aplicam também as permissões específicas do recurso. JWT assinado e revogação ficam sob a mesma autoridade. Apenas a identidade deriva o papel confiável.
 
 ## Comportamento esperado
 
