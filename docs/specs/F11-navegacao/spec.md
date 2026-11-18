@@ -13,13 +13,21 @@ Oferecer acesso aos caminhos autorizados por perfil, com barra lateral compacta 
 
 A interface usa a identidade autenticada e as projeções do domínio, preservando os contratos existentes.
 
+
+
+O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+
 ## 2. Impacto arquitetural
 
 O navegador resolve a rota, carrega a identidade e chama as APIs existentes na mesma origem. A autorização de dados permanece no servidor. A interface apresenta estado de carregamento e recusa sem revelar o conteúdo protegido.
 
 ## 3. Decisões técnicas
 
+Decisões arquiteturais relacionadas: [ADR-0003](../../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md).
+
 Reutilizar o Shell e os componentes Synapse presentes no produto. As decisões foram observadas em web/src/app.jsx; web/src/ui.jsx; web/src/styles/app.css. A navegação por hash conserva os caminhos existentes. Falha de identidade limpa a sessão do navegador e exige nova entrada.
+
+O diálogo móvel contém a navegação de teclado entre seus elementos visíveis e habilitados: Tab no último retorna ao primeiro, e Shift+Tab no primeiro retorna ao último. Escape e clique externo fecham o menu; escolher uma página fecha e transfere foco ao conteúdo. A regressão em web/tests/test_mobile_navigation.py exercita os dois sentidos em 390 e 720 px.
 
 ## 4. Visão de componentes
 

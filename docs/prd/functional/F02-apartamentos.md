@@ -2,7 +2,7 @@
 
 Domínio: Administração | Onda: 4 | Prioridade: 1
 
-Conforms to: NFR01, NFR03
+Requisitos não funcionais relacionados: NFR01, NFR03
 
 ## Descrição
 
@@ -14,26 +14,26 @@ A referência de produto original é FR02. A correspondência dos critérios ant
 
 ## Capacidades
 
-- Consumes: F04.
-- Provides: Unidades com código estável e número único, relacionadas a um único usuário morador quando ocupadas, consumidas pelas agendas, visitas e sessões do chat.
+- Depende de: F04.
+- Fornece: Unidades com código estável e número único, relacionadas a um único usuário morador quando ocupadas, consumidas pelas agendas, visitas e sessões do chat.
 - Integração: Cadastro passa pelo proxy e pelo guard de identidade do serviço de condomínio. A verificação de conta elegível consulta `users` por fronteira interna. Reservas, visitantes e futuros pedidos de agente se referem à unidade registrada no próprio domínio.
 
 ## Comportamento esperado
 
 - **Dado** um administrador e uma conta moradora ativa e cadastrada
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** cadastrar uma unidade, editar uma segunda e consultar a API de unidades com credenciais do morador
 - **Então** o painel associa duas unidades à mesma conta e ambas aparecem na lista própria do morador.
 
 - **Dado** um número já existente
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** criar uma unidade, repetir POST com vínculo diferente e comparar o estado obtido por GET
 - **Então** a tentativa duplicada retorna conflito e preserva a unidade original.
 
 - **Dado** um morador autenticado
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** tentar criar e editar unidades como morador, em seguida comparar a lista administrativa
 - **Então** as operações administrativas são recusadas sem persistir alterações.
 
 - **Dado** uma unidade usada por reserva ou autorização de visita
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** tentar DELETE sobre unidade de fixture com dependência e consultar a unidade e a agenda
 - **Então** a exclusão é bloqueada e o histórico fica disponível.
 
 - **Dado** uma unidade da carga inicial e uma unidade editável

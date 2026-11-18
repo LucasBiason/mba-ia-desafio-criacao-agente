@@ -13,11 +13,17 @@ O serviço `users` mantém dados de contas em identidade e usa `auth` para valid
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F04](../../prd/functional/F04-usuarios.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
+
+
+O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+
 ## 2. Impacto arquitetural
 
 CRUD de contas passa pelo proxy e chega a `users`. A API resolve a identidade e exige o papel administrativo antes de persistir em `identity-db`. O cadastro de apartamentos usa somente a projeção pública para confirmar que a conta é elegível.
 
 ## 3. Decisões técnicas
+
+Decisões arquiteturais relacionadas: [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md), [ADR-0003](../../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md).
 
 Manter contas desativadas para preservar vínculos. Usuários `admin` gerenciam perfis `admin` e `resident`. O papel é escolhido no cadastro e fica fixo, preservando a elegibilidade do responsável pelo apartamento. A criação usa email normalizado e único, com rollback na criação concorrente da mesma chave. Alterações de estado preservam pelo menos uma conta administrativa ativa. Mudar senha ou estado revoga as sessões da conta afetada. A migração converte papéis administrativos legados preservando os IDs e credenciais.
 
@@ -39,6 +45,8 @@ As schemas Pydantic validam tipo e formato. Validators não gravam e controllers
 GET e POST em `/api/admin/users`. O cadastro recebe `name`, `email`, `password` e `role`. PATCH `/api/admin/users/{id}` atualiza os campos permitidos, incluindo `active`. A senha nova tem entre 12 e 256 caracteres. GET por ID devolve a projeção permitida. A resposta expõe `id`, `name`, `email`, `role` e `active`. O perfil do usuário corrente vem de `/api/auth/me`.
 
 Email duplicado causa conflito. Campo inválido retorna mensagem por campo. Elevação indevida de papel retorna 403 e deixa a conta original intacta. Conta desativada perde acesso validado.
+
+Entradas de identidade com caractere nulo são recusadas com 422 antes do repository. Email e nome seguem sua normalização explícita; a senha conserva espaços e conteúdo sem normalização implícita. Os testes de regressão estão em services/authentication/tests/test_identity_inputs.py e nas chamadas HTTP com dados sintéticos.
 
 ## 6. Modelo de dados
 

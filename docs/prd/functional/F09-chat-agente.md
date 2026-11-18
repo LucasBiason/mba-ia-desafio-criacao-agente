@@ -2,9 +2,11 @@
 
 Domínio: Agentes | Onda: 6 | Prioridade: 1
 
-Conforms to: NFR01, NFR02, NFR03
+Requisitos não funcionais relacionados: NFR01, NFR02, NFR03
 
 ## Descrição
+
+A integração do assistente é a próxima etapa do desafio. Sessões persistidas e a fronteira de indisponibilidade existentes são preservadas, sem afirmar que a conversa com modelo ou tools está entregue.
 
 Entregar o contêiner do chat e os contratos de sessão da base. Orientar a implementação do agente, suas tools e confirmação pela API.
 
@@ -14,30 +16,30 @@ A referência de produto original é FR09. A correspondência dos critérios ant
 
 ## Capacidades
 
-- Consumes: F06, F07, F08.
-- Provides: Sessão com usuário e unidade estáveis na base e fronteira de integração documentada para o agente principal e especialistas.
+- Depende de: F06, F07, F08.
+- Fornece: Sessão com usuário e unidade estáveis na base e fronteira de integração documentada para o agente principal e especialistas.
 - Integração: O frontend envia mensagens à API autenticada. A API encaminhará à fronteira privada do serviço de agente somente depois de autorizar usuário e unidade. O contexto de identidade vem do servidor, e o especialista usa portas de domínio para consultar e registrar efeitos. A visão acadêmica usa um adaptador isolado para o contexto inicial fornecido pelo avaliador.
 
 ## Comportamento esperado
 
 - **Dado** uma conta moradora tem duas unidades, abre sessão em uma e solicita mudança por mensagem
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** registrar identidade entregue à tool e comparar resposta, eventos e projeções diante do pedido de troca
 - **Então** as tools continuam no escopo da unidade escolhida na abertura.
 
 - **Dado** uma conta administrativa tenta abrir chat em nome de um morador
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** enviar POST de abertura com JWT administrativo e comparar as sessões existentes
 - **Então** o serviço recusa a sessão e não faz ação em nome de outra conta.
 
 - **Dado** uma reserva paga aguarda confirmação antes de reiniciar o processo
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** criar pendência, reiniciar sem restaurar, aprovar e comparar agenda e reenvio
 - **Então** após reinício a decisão válida produz um efeito e o reenvio sequencial retorna 409.
 
 - **Dado** o morador pergunta pelo horário de fechamento da piscina aos domingos
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** comparar a versão do regulamento, resposta, tool chamada e texto persistido em eventos
 - **Então** a resposta usa o horário vigente e os eventos não contêm assuntos não consultados.
 
 - **Dado** um morador abre uma sessão numa unidade autorizada e envia uma mensagem
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** abrir sessão, recarregar o navegador, consultar o detalhe e enviar texto com o agente desativado
 - **Então** após reabrir a tela a unidade continua fixa e a mensagem recebe indisponibilidade identificável.
 
 ## Critérios de aceite

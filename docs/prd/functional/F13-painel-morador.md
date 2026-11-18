@@ -2,7 +2,7 @@
 
 Domínio: Morador | Onda: 6 | Prioridade: 1
 
-Conforms to: NFR01, NFR03
+Requisitos não funcionais relacionados: NFR01, NFR03
 
 ## Descrição
 
@@ -10,8 +10,8 @@ Mostrar ao morador o resumo de sua unidade selecionada e os caminhos para consul
 
 ## Capacidades
 
-- Consumes: F02, F07, F08.
-- Provides: Mostrar ao morador o resumo de sua unidade selecionada e os caminhos para consultas e assistente.
+- Depende de: F02, F07, F08.
+- Fornece: Mostrar ao morador o resumo de sua unidade selecionada e os caminhos para consultas e assistente.
 
 ## Comportamento esperado
 

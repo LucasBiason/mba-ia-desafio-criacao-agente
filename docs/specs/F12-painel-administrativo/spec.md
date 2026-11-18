@@ -13,17 +13,23 @@ Consolidar os totais de cadastros e os atalhos de gestão para iniciar a operaç
 
 A interface usa a identidade autenticada e as projeções do domínio, preservando os contratos existentes.
 
+
+
+O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+
 ## 2. Impacto arquitetural
 
 O navegador resolve a rota, carrega a identidade e chama as APIs existentes na mesma origem. A autorização de dados permanece no servidor. A interface apresenta estado de carregamento e recusa sem revelar o conteúdo protegido.
 
 ## 3. Decisões técnicas
 
-Reutilizar o Shell e os componentes Synapse presentes no produto. As decisões foram observadas em web/src/admin.jsx; services/apartments/main.py. A navegação por hash conserva os caminhos existentes. Falha de identidade limpa a sessão do navegador e exige nova entrada.
+Decisões arquiteturais relacionadas: [ADR-0003](../../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md).
+
+Reutilizar o Shell e os componentes Synapse presentes no produto. A implementação está em AdminHome, em web/src/admin.jsx; a obtenção de dados usa useQuery, em web/src/api.js. A navegação por hash conserva os caminhos existentes. Falha de identidade limpa a sessão do navegador e exige nova entrada.
 
 ## 4. Visão de componentes
 
-Implementação em web/src/admin.jsx; services/apartments/main.py. A API fornece identidade e dados de domínio, o React resolve as páginas e os componentes apresentam carregamento, conteúdo e erro. Os links preservam nomes acessíveis e o foco usa os componentes existentes.
+AdminHome consulta GET /api/admin/apartments, GET /api/admin/areas e GET /api/admin/reservations independentemente. Cada cartão apresenta carregamento, erro ou quantidade da projeção recebida; não há endpoint agregado nem escrita a partir do painel. A API fornece identidade e dados de domínio, o React resolve as páginas e os componentes apresentam carregamento, conteúdo e erro. Os links preservam nomes acessíveis e o foco usa os componentes existentes.
 
 ## 5. Contratos de interface
 

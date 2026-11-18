@@ -2,7 +2,7 @@
 
 Domínio: Segurança | Onda: 2 | Prioridade: 1
 
-Conforms to: NFR01, NFR03
+Requisitos não funcionais relacionados: NFR01, NFR03
 
 ## Descrição
 
@@ -14,26 +14,26 @@ A referência de produto original é FR03. A correspondência dos critérios ant
 
 ## Capacidades
 
-- Consumes: F01.
-- Provides: Login, usuário atual, logout, introspecção e contexto verificado de papel para serviços consumidores.
+- Depende de: F01.
+- Fornece: Login, usuário atual, logout, introspecção e contexto verificado de papel para serviços consumidores.
 - Integração: O navegador se autentica pelo proxy. `users` e `condo` reenviam o bearer ao serviço de autenticação por conexão interna e aplicam também as permissões específicas do recurso. JWT assinado e revogação ficam sob a mesma autoridade. Apenas a identidade deriva o papel confiável.
 
 ## Comportamento esperado
 
 - **Dado** uma conta ativa com credenciais válidas
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** autenticar administrador e morador e consultar o perfil e a superfície privada permitida
 - **Então** login devolve uma sessão JWT aceito na leitura privada apropriada ao papel.
 
 - **Dado** uma rota privada acessada com token ausente, vencido, adulterado ou revogado
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** variar os quatro estados com massa efêmera, comparar as respostas e conferir a persistência
 - **Então** o acesso retorna 401 sem executar a operação.
 
 - **Dado** um morador com sessão válida em rota administrativa
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** enviar o mesmo POST como administrador e morador, comparar estados e status
 - **Então** o acesso retorna 403 sem efetivar mutação.
 
 - **Dado** a identidade centralizada indisponível em teste isolado
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** induzir falha da introspecção, obter 503 e comparar o estado após reativar o serviço
 - **Então** o consumidor devolve erro de dependência e não executa a ação.
 
 ## Critérios de aceite

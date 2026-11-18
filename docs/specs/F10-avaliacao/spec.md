@@ -13,11 +13,17 @@ A avaliação futura inicia na porta local 8000, usando Python 3.12 ou superior,
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F10](../../prd/functional/F10-avaliacao.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
+
+
+O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+
 ## 2. Impacto arquitetural
 
 Um entrypoint dedicado traduz o protocolo acadêmico para a mesma lógica de sessão, reconhecimento de intenções e regras de domínio. O modo fica isolado da composição de produto. O adaptador de verificação acadêmica poderá consultar projeções por apartamento definidas no protocolo. A rede do produto não roteia esses caminhos.
 
 ## 3. Decisões técnicas
+
+Decisões arquiteturais relacionadas: [ADR-0004](../../adr/ADR-0004-toolkit-e-operacao-dos-servicos.md).
 
 Reservar o contrato atual de produto com namespace /api e autenticação obrigatória. Adotar perfil ou entrypoint separado para o avaliador, com banco descartável exclusivo quando o teste for iniciado. Fixar a versão exata do ADK após verificar a retomada com sessão persistida. Executar restauração de dados como ação explícita do roteiro, fora da partida normal.
 

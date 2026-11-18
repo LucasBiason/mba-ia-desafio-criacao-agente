@@ -13,11 +13,17 @@ O administrador cria uma área identificada por chave estável, edita nome e tax
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F05](../../prd/functional/F05-areas.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
+
+
+O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+
 ## 2. Impacto arquitetural
 
 React usa `condo` para gestão e leitura. A persistência de áreas fica no banco do domínio. O catálogo autenticado alimenta filtros de agenda e seleção de área em atividades futuras do morador.
 
 ## 3. Decisões técnicas
+
+Decisões arquiteturais relacionadas: [ADR-0001](../../adr/ADR-0001-servicos-por-dominio-e-camadas.md), [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md).
 
 Representar preços por `fee_cents` inteiro entre 0 e 100000000. O ID de rota estável usa letras minúsculas, dígitos e hífens, com até 64 caracteres. O nome é único sem distinção de maiúsculas. Em colisão de nome ou identificador, a transação faz rollback e responde 409. A exclusão sujeita-se às referências históricas.
 

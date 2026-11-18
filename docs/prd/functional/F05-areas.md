@@ -2,7 +2,7 @@
 
 Domínio: Administração | Onda: 3 | Prioridade: 1
 
-Conforms to: NFR02, NFR01
+Requisitos não funcionais relacionados: NFR02, NFR01
 
 ## Descrição
 
@@ -14,26 +14,26 @@ A referência de produto original é FR05. A correspondência dos critérios ant
 
 ## Capacidades
 
-- Consumes: F03.
-- Provides: Catálogo autenticado de áreas e frequência de taxa para consulta e futura operação do agente.
+- Depende de: F03.
+- Fornece: Catálogo autenticado de áreas e frequência de taxa para consulta e futura operação do agente.
 - Integração: React usa `condo` para gestão e leitura. A persistência de áreas fica no banco do domínio. O catálogo autenticado alimenta filtros de agenda e seleção de área em atividades futuras do morador.
 
 ## Comportamento esperado
 
 - **Dado** um administrador cria área com taxa zero
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** cadastrar a área, abrir o catálogo do morador e comparar `fee_cents` com a indicação visual
 - **Então** a área aparece no catálogo como gratuita.
 
 - **Dado** uma taxa negativa no cadastro ou na edição
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** enviar valores inválidos e consultar a área no catálogo depois
 - **Então** a requisição é rejeitada e a taxa existente permanece.
 
 - **Dado** um morador tenta editar uma taxa
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** autenticar como morador, tentar PATCH na rota administrativa e consultar o catálogo
 - **Então** a operação é recusada e a resposta seguinte preserva o valor.
 
 - **Dado** uma área referenciada e uma área recém-criada sem uso
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** executar as duas exclusões, comparar catálogo e consultar agenda da área referenciada
 - **Então** a primeira exclusão é recusada e a segunda remove o cadastro independente.
 
 ## Critérios de aceite

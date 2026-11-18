@@ -13,11 +13,17 @@ A base importa autorizações de visita. A administração registra horários de
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F08](../../prd/functional/F08-visitantes.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
+
+
+O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+
 ## 2. Impacto arquitetural
 
 Consulta de visitante chega a `condo` e combina identidade com vínculo. A aula liga a ação de visitante à mesma infraestrutura de confirmações de reservas pagas. Uma ação pendente carrega somente o nome, a data e o apartamento já validado.
 
 ## 3. Decisões técnicas
+
+Decisões arquiteturais relacionadas: [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md), [ADR-0003](../../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md).
 
 A edição administrativa atualiza apenas os horários de uma autorização existente. Entrada pode ser informada sem saída. Se houver saída, deve ser posterior à entrada no mesmo dia. O chat futuro pode pedir nome e data e propor autorização; o código persiste após decisão válida na rota. Atualizar estado e consumir a pendência uma única vez com fronteira consistente de falha e rollback.
 

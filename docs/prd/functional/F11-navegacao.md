@@ -2,7 +2,7 @@
 
 Domínio: Interface | Onda: 3 | Prioridade: 1
 
-Conforms to: NFR01, NFR03
+Requisitos não funcionais relacionados: NFR01, NFR03
 
 ## Descrição
 
@@ -10,8 +10,8 @@ Oferecer acesso aos caminhos autorizados por perfil, com barra lateral compacta 
 
 ## Capacidades
 
-- Consumes: F03.
-- Provides: Oferecer acesso aos caminhos autorizados por perfil, com barra lateral compacta no desktop e menu modal no celular.
+- Depende de: F03.
+- Fornece: Oferecer acesso aos caminhos autorizados por perfil, com barra lateral compacta no desktop e menu modal no celular.
 
 ## Comportamento esperado
 

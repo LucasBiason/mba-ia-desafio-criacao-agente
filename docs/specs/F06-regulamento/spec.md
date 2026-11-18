@@ -13,11 +13,17 @@ A instalação lê o Markdown original como versão zero. O administrador edita 
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F06](../../prd/functional/F06-regulamento.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
+
+
+O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+
 ## 2. Impacto arquitetural
 
 A edição sai do painel autenticado e chega ao domínio. A operação registra na mesma gravação o texto, a versão, a autoridade e o instante. A futura consulta por assunto usa o texto vigente, por meio de uma ferramenta proposta no roteiro.
 
 ## 3. Decisões técnicas
+
+Decisões arquiteturais relacionadas: [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md), [ADR-0005](../../adr/ADR-0005-regulamento-unico-versionado.md).
 
 Usar versões numeradas e comparar a versão-base no momento da publicação. Esse controle evita que uma edição antiga sobrescreva o trabalho de outra conta. A leitura de conteúdo no frontend preserva texto e não executa marcação recebida do usuário.
 

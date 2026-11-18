@@ -1,7 +1,8 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
+from microservice_toolkit.schemas import RequestSchema
 from services.authentication.schemas.types import Email, LoginPassword
 
-class Login(BaseModel):
-    model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
+class Login(RequestSchema):
+    model_config = ConfigDict(str_strip_whitespace=False, hide_input_in_errors=True)
     email: Email
     password: LoginPassword

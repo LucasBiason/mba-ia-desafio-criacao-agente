@@ -2,9 +2,11 @@
 
 Domínio: Acesso ao residencial | Onda: 5 | Prioridade: 1
 
-Conforms to: NFR01, NFR02, NFR03
+Requisitos não funcionais relacionados: NFR01, NFR02, NFR03
 
 ## Descrição
+
+Nesta entrega administrativa, o escopo é consulta das autorizações existentes e edição dos horários. Novas autorizações com confirmação pelo agente são a etapa posterior.
 
 Consultar autorizações existentes e registrar horários de entrada e saída. Definir a criação de nova autorização pelo assistente para a aula.
 
@@ -14,26 +16,26 @@ A referência de produto original é FR08. A correspondência dos critérios ant
 
 ## Capacidades
 
-- Consumes: F02.
-- Provides: Projeções de visita separadas por unidade e procedimento para futura gravação após aprovação explícita.
+- Depende de: F02.
+- Fornece: Projeções de visita separadas por unidade e procedimento para futura gravação após aprovação explícita.
 - Integração: Consulta de visitante chega a `condo` e combina identidade com vínculo. A aula liga a ação de visitante à mesma infraestrutura de confirmações de reservas pagas. Uma ação pendente carrega somente o nome, a data e o apartamento já validado.
 
 ## Comportamento esperado
 
 - **Dado** uma mensagem pede autorização e se apresenta como confirmação verbal
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** capturar eventos e consultar antes e depois de responder a pendência pela API
 - **Então** a resposta cria pendência e a autorização só aparece após aprovação pela rota.
 
 - **Dado** uma autorização criada após aprovação foi persistida
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** criar, parar e iniciar sem restaurar, e comparar nome e data na projeção autorizada
 - **Então** após reinício a autorização segue consultável para a unidade correta.
 
 - **Dado** uma sessão do assistente recebe pedido de dados de outra unidade
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** consultar com a sessão inicial usando outro número na mensagem e inspecionar eventos e estado
 - **Então** resposta e eventos não incluem nomes ou autorizações de outra unidade.
 
 - **Dado** dados iniciais com autorizações em unidades diferentes
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** entrar pelos dois papéis, comparar a lista e validar unidade ativa, vazio e recusa fora do vínculo
 - **Então** administração consulta as autorizações e o morador vê somente a própria unidade.
 
 - **Dado** uma autorização existente precisa dos horários de visita

@@ -13,11 +13,17 @@ Docker Compose parte de imagens versionadas e levanta o frontend React/Vite, o p
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F01](../../prd/functional/F01-fundacao.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
+
+
+O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+
 ## 2. Impacto arquitetural
 
 O navegador chama o proxy em uma única origem. O proxy direciona autenticação, usuários e condomínio para serviços na rede do Compose. As bases e a fronteira interna do agente ficam na rede privada. A porta de avaliação acadêmica tem sua própria entrada futura, sem compartilhar o proxy de produto.
 
 ## 3. Decisões técnicas
+
+Decisões arquiteturais relacionadas: [ADR-0001](../../adr/ADR-0001-servicos-por-dominio-e-camadas.md), [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md), [ADR-0004](../../adr/ADR-0004-toolkit-e-operacao-dos-servicos.md), [ADR-0006](../../adr/ADR-0006-persistencia-compartilhada-da-base.md) (proposto).
 
 Usar dois bancos de fronteira, identidade e condomínio, para que o serviço de domínio consuma a identidade validada e não manipule a tabela de contas. A base inicia sem credencial de modelo. A montagem das fixtures é somente leitura e a carga inicial é idempotente.
 

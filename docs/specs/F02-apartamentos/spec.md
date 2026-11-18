@@ -13,11 +13,17 @@ O serviço `condo` mantém as unidades e recebe um identificador público de mor
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F02](../../prd/functional/F02-apartamentos.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
+
+
+O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+
 ## 2. Impacto arquitetural
 
 Cadastro passa pelo proxy e pelo guard de identidade do serviço de condomínio. A verificação de conta elegível consulta `users` por fronteira interna. Reservas, visitantes e futuros pedidos de agente se referem à unidade registrada no próprio domínio.
 
 ## 3. Decisões técnicas
+
+Decisões arquiteturais relacionadas: [ADR-0001](../../adr/ADR-0001-servicos-por-dominio-e-camadas.md), [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md), [ADR-0003](../../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md).
 
 O número é único e normalizado em maiúsculas, com até dez dígitos e uma letra opcional. A unidade tem um código interno persistente, `id`, que permanece ao editar o número. A edição troca o número enquanto a unidade estiver sem histórico. Referências impedem alteração da chave usada por reservas, visitas ou sessões. O vínculo é opcional e aceita usuário do tipo Morador em novas associações. Colisões e violações de dependência cancelam a escrita por rollback.
 

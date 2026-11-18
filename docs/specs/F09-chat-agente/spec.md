@@ -13,11 +13,17 @@ A base permite abrir e retomar sessões pelo perfil morador. A tela informa a in
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F09](../../prd/functional/F09-chat-agente.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
+
+
+O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+
 ## 2. Impacto arquitetural
 
 O frontend envia mensagens à API autenticada. A API encaminhará à fronteira privada do serviço de agente somente depois de autorizar usuário e unidade. O contexto de identidade vem do servidor, e o especialista usa portas de domínio para consultar e registrar efeitos. A visão acadêmica usa um adaptador isolado para o contexto inicial fornecido pelo avaliador.
 
 ## 3. Decisões técnicas
+
+Decisões arquiteturais relacionadas: [ADR-0001](../../adr/ADR-0001-servicos-por-dominio-e-camadas.md), [ADR-0003](../../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md), [ADR-0004](../../adr/ADR-0004-toolkit-e-operacao-dos-servicos.md).
 
 Preservar a sessão com unidade escolhida na abertura; mudar a unidade inicia outra sessão. Para a aula, propor especialistas de reservas e convivência. Convivência usa ferramentas de visitas e de regulamento. A topologia de delegação e o modelo exato serão escolhidos na prática. Tratar entrada de conversa como intenção e aplicar regras no domínio.
 

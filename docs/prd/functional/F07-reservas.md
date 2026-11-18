@@ -2,9 +2,11 @@
 
 Domínio: Reservas | Onda: 5 | Prioridade: 1
 
-Conforms to: NFR01, NFR02, NFR03
+Requisitos não funcionais relacionados: NFR01, NFR02, NFR03
 
 ## Descrição
+
+Nesta entrega administrativa, o escopo é consulta da agenda e das reservas e edição dos horários. Criação, cobrança, confirmação e cancelamento pelo agente são a etapa posterior.
 
 Consultar reservas em um calendário por área, localizar pelo código e registrar horários. Criar e cancelar reservas no fluxo de integração.
 
@@ -14,30 +16,30 @@ A referência de produto original é FR07. A correspondência dos critérios ant
 
 ## Capacidades
 
-- Consumes: F02, F05.
-- Provides: Projeção de agenda consumida pela interface e contrato de operações futuras com identidade e efeito controlados.
+- Depende de: F02, F05.
+- Fornece: Projeção de agenda consumida pela interface e contrato de operações futuras com identidade e efeito controlados.
 - Integração: O painel chama a API autenticada e usa filtros por área, data e estado. A interface do morador envia somente a unidade selecionada. A API verifica vínculo em cada leitura. O agente e as futuras tools recebem o contexto autenticado do servidor e executam regras do domínio antes de gravar.
 
 ## Comportamento esperado
 
 - **Dado** uma conta moradora vinculada e reservas em duas unidades distintas
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** autenticar, selecionar a unidade e comparar a projeção com a agenda administrativa
 - **Então** a consulta mostra somente reservas da unidade autorizada.
 
 - **Dado** duas confirmações próprias para a mesma área e data
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** disparar aprovações simultâneas em duas sessões e somar projeções de ambas as unidades
 - **Então** duas aprovações retornam o contrato previsto e fica uma única reserva ativa.
 
 - **Dado** uma reserva ativa própria é cancelada e o mesmo slot é reservado novamente
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** exercitar tool de cancelamento e de criação e comparar códigos e estado antes e depois
 - **Então** cancelamento não cria pendência e o código novo difere do anterior e dos iniciais.
 
 - **Dado** um administrador abre a agenda de uma área em uma data
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** clicar em dias ocupados e vazios no mês, filtrar uma área e buscar um código de outra área
 - **Então** o calendário mostra os horários e os titulares, e clicar em uma data abre a lista do dia.
 
 - **Dado** uma área gratuita e outra com taxa positiva estão disponíveis
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** executar as duas intenções e comparar eventos, pendências e reservas antes e depois da aprovação
 - **Então** a gratuita é gravada sem pendência e a paga fica pendente até decisão pela API.
 
 - **Dado** uma reserva existente precisa de horário

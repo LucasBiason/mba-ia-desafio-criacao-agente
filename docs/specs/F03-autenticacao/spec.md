@@ -13,11 +13,17 @@ O serviço `auth` verifica a credencial e emite JWT HS256 de uma hora, associado
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F03](../../prd/functional/F03-autenticacao.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
+
+
+O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+
 ## 2. Impacto arquitetural
 
-O navegador se autentica pelo proxy. `users` e `condo` reenviam o bearer ao serviço de autenticação por conexão interna e aplicam também as permissões específicas do recurso. JWT assinado e revogação ficam sob a mesma autoridade. Apenas a identidade deriva o papel confiável.
+O navegador se autentica pelo proxy. Os serviços de usuários, apartamentos, áreas, agenda, visitas, configurações e agente reenviam o bearer ao serviço de autenticação por conexão interna e aplicam também as permissões específicas do recurso. JWT assinado e revogação ficam sob a mesma autoridade. Apenas a identidade deriva o papel confiável.
 
 ## 3. Decisões técnicas
+
+Decisões arquiteturais relacionadas: [ADR-0003](../../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md).
 
 Aplicar papel `admin` ou `resident` no servidor, além de checar sessão vigente e conta ativa. Guardar hash Argon2id e referência de sessão no banco de identidade. Depois de oito tentativas consecutivas de login numa janela de quinze minutos, a próxima recebe 429. Um login válido limpa a contagem. A criação de sessão obtém lock de linha e reconfirma credencial e estado, protegendo alterações concorrentes. Os serviços dependentes falham fechados quando a introspecção fica indisponível.
 
@@ -39,6 +45,8 @@ As schemas Pydantic validam tipo e formato. Validators não gravam e controllers
 POST `/api/auth/login` recebe `email` e `password`, retorna `access_token`, `token_type`, `expires_in` e `user`. GET `/api/auth/me` apresenta o perfil público. POST `/api/auth/logout` responde 204 e revoga a sessão corrente. Use `Authorization: Bearer` nas APIs privadas. GET `/internal/identity` exige autorização serviço a serviço além do bearer e fica fora do proxy público.
 
 Credencial ou token inválido, expirado ou revogado retorna 401. Papel insuficiente retorna 403. Dependência indisponível retorna 503 na rota consumidora e não causa operação parcial.
+
+Entradas de identidade com caractere nulo são recusadas com 422 antes do repository. Email e nome seguem sua normalização explícita; a senha conserva espaços e conteúdo sem normalização implícita. Os testes de regressão estão em services/authentication/tests/test_identity_inputs.py e nas chamadas HTTP com dados sintéticos.
 
 ## 6. Modelo de dados
 

@@ -2,7 +2,7 @@
 
 Domínio: Administração | Onda: 3 | Prioridade: 1
 
-Conforms to: NFR02, NFR03
+Requisitos não funcionais relacionados: NFR02, NFR03
 
 ## Descrição
 
@@ -14,26 +14,26 @@ A referência de produto original é FR06. A correspondência dos critérios ant
 
 ## Capacidades
 
-- Consumes: F03.
-- Provides: Conteúdo vigente para o morador e um histórico administrativo com autoria e horário de publicação.
+- Depende de: F03.
+- Fornece: Conteúdo vigente para o morador e um histórico administrativo com autoria e horário de publicação.
 - Integração: A edição sai do painel autenticado e chega ao domínio. A operação registra na mesma gravação o texto, a versão, a autoridade e o instante. A futura consulta por assunto usa o texto vigente, por meio de uma ferramenta proposta no roteiro.
 
 ## Comportamento esperado
 
 - **Dado** um administrador edita a versão zero ativa
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** salvar o novo texto, abrir a versão atual e comparar ambas as entradas no histórico
 - **Então** a versão um fica vigente com autoria e hora, e a versão zero permanece no histórico.
 
 - **Dado** duas contas editam a mesma versão-base
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** enviar duas edições com a mesma versão-base e conferir que foi criada uma única revisão
 - **Então** a atualização desatualizada retorna conflito e preserva o conteúdo vigente.
 
 - **Dado** um morador autenticado tenta publicar uma edição
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** consultar o texto vigente como morador, tentar PUT na rota admin e comparar versões
 - **Então** o acesso de escrita é recusado sem alteração do histórico.
 
 - **Dado** uma revisão publicada antes de reiniciar o serviço
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** publicar alteração, reiniciar o domínio e comparar o histórico com a captura anterior
 - **Então** a versão e o autor permanecem consultáveis após o reinício.
 
 ## Critérios de aceite

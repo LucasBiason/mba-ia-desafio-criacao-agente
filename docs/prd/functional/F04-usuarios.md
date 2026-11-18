@@ -2,7 +2,7 @@
 
 Domínio: Administração | Onda: 3 | Prioridade: 1
 
-Conforms to: NFR01, NFR03
+Requisitos não funcionais relacionados: NFR01, NFR03
 
 ## Descrição
 
@@ -14,26 +14,26 @@ A referência de produto original é FR04. A correspondência dos critérios ant
 
 ## Capacidades
 
-- Consumes: F03.
-- Provides: Perfis públicos com identificador, nome, email, papel e estado e uma consulta interna controlada para vincular moradores.
+- Depende de: F03.
+- Fornece: Perfis públicos com identificador, nome, email, papel e estado e uma consulta interna controlada para vincular moradores.
 - Integração: CRUD de contas passa pelo proxy e chega a `users`. A API resolve a identidade e exige o papel administrativo antes de persistir em `identity-db`. O cadastro de apartamentos usa somente a projeção pública para confirmar que a conta é elegível.
 
 ## Comportamento esperado
 
 - **Dado** um administrador autenticado e dados de um novo morador
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** criar a conta pelo painel, autenticar, confirmar formato público e vincular unidade
 - **Então** o cadastro devolve perfil público, aceita login da nova conta e permite vinculá-la.
 
 - **Dado** o último administrador ativo sofre tentativa de desativação
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** em ambiente isolado, desativar as outras contas administrativas e tentar desativar a última
 - **Então** a operação é recusada e uma conta administrativa continua ativa.
 
 - **Dado** um morador com sessão válida tenta acessar outro perfil ou a lista administrativa
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** pedir lista administrativa e perfil próprio e inspecionar apenas a identidade autenticada
 - **Então** a resposta não inclui registros alheios.
 
 - **Dado** uma conta existente
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** atualizar uma conta criada para o teste, repetir email em segunda conta, desativar e reapresentar token
 - **Então** edição persiste e a desativação invalida o acesso; duplicidade é rejeitada.
 
 ## Critérios de aceite

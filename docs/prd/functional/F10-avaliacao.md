@@ -2,9 +2,11 @@
 
 Domínio: Integração | Onda: 7 | Prioridade: 1
 
-Conforms to: NFR04, NFR01, NFR03
+Requisitos não funcionais relacionados: NFR04, NFR01, NFR03
 
 ## Descrição
+
+O modo acadêmico pertence à etapa posterior à integração do assistente. Seus critérios permanecem publicados e ainda não representam a avaliação de fechamento da administração manual.
 
 Definir a fronteira da API avaliada e os procedimentos para validar o desafio quando a integração de agentes estiver concluída.
 
@@ -14,26 +16,26 @@ A referência de produto original é FR10. A correspondência dos critérios ant
 
 ## Capacidades
 
-- Consumes: F09.
-- Provides: Contrato de integração, preparação e medição do protocolo acadêmico independente da entrada autenticada do produto.
+- Depende de: F09.
+- Fornece: Contrato de integração, preparação e medição do protocolo acadêmico independente da entrada autenticada do produto.
 - Integração: Um entrypoint dedicado traduz o protocolo acadêmico para a mesma lógica de sessão, reconhecimento de intenções e regras de domínio. O modo fica isolado da composição de produto. O adaptador de verificação acadêmica poderá consultar projeções por apartamento definidas no protocolo. A rede do produto não roteia esses caminhos.
 
 ## Comportamento esperado
 
 - **Dado** um clone limpo com dependências e chave própria autorizada
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** seguir o roteiro de partida, restaurar os dados, registrar códigos e observar estado e eventos em cada passo
 - **Então** o avaliador executa os 15 passos na porta 8000 com o protocolo completo.
 
 - **Dado** a composição base do produto é consultada pelo proxy publicado
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** consultar rotas locais planejadas na origem do produto e tentar APIs privadas sem bearer
 - **Então** caminhos acadêmicos e rotas internas não contornam a autenticação.
 
 - **Dado** o fork está em preparação final após a aula
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** comparar hashes dos dados, revisar o lock e verificar os links das garantias
 - **Então** cinco fixtures correspondem à origem e o README identifica provas e trechos implementados.
 
 - **Dado** a base é construída e iniciada com seu comando de demonstração
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** conferir os hashes das fixtures antes da partida e depois do teste com volumes isolados
 - **Então** as cinco fixtures mantêm o mesmo conteúdo entre a cópia e o ambiente inicializado.
 
 ## Critérios de aceite

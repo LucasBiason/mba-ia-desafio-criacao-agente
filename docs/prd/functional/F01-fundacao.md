@@ -2,7 +2,7 @@
 
 Domínio: Operação | Onda: 1 | Prioridade: 1
 
-Conforms to: NFR04, NFR02
+Requisitos não funcionais relacionados: NFR04, NFR02
 
 ## Descrição
 
@@ -14,22 +14,22 @@ A referência de produto original é FR01. A correspondência dos critérios ant
 
 ## Capacidades
 
-- Consumes: nenhuma.
-- Provides: Interface React compilada, proxy de mesma origem, rotas privadas, dependências com prontidão e persistência local.
+- Depende de: nenhuma.
+- Fornece: Interface React compilada, proxy de mesma origem, rotas privadas, dependências com prontidão e persistência local.
 - Integração: O navegador chama o proxy em uma única origem. O proxy direciona autenticação, usuários e condomínio para serviços na rede do Compose. As bases e a fronteira interna do agente ficam na rede privada. A porta de avaliação acadêmica tem sua própria entrada futura, sem compartilhar o proxy de produto.
 
 ## Comportamento esperado
 
 - **Dado** um clone com Docker e o cliente Compose e os dados iniciais
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** validar o manifesto, subir a composição de teste, conferir serviços saudáveis e abrir a origem publicada
 - **Então** a composição inicia as onze unidades e carrega a tela de login.
 
 - **Dado** uma configuração obrigatória de autenticação ausente numa composição descartável
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** omitir a configuração em sandbox e comparar status do serviço e saída sanitizada
 - **Então** o Compose recusa a configuração ou a autenticação fica sem prontidão. A falha identifica a variável sem divulgar segredo.
 
 - **Dado** uma edição persistida em volume existente
-- **Quando** o operador exercita o cenário descrito na verificação
+- **Quando** criar uma conta e alterar um cadastro, reiniciar os serviços e consultar os dois pelas mesmas APIs
 - **Então** a edição continua após reiniciar e a carga inicial não a sobrescreve.
 
 ## Critérios de aceite

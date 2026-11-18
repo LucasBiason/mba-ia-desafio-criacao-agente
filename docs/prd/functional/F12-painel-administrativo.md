@@ -2,7 +2,7 @@
 
 Domínio: Administração | Onda: 6 | Prioridade: 1
 
-Conforms to: NFR01, NFR03
+Requisitos não funcionais relacionados: NFR01, NFR03
 
 ## Descrição
 
@@ -10,8 +10,8 @@ Consolidar os totais de cadastros e os atalhos de gestão para iniciar a operaç
 
 ## Capacidades
 
-- Consumes: F02, F05, F07.
-- Provides: Consolidar os totais de cadastros e os atalhos de gestão para iniciar a operação administrativa.
+- Depende de: F02, F05, F07.
+- Fornece: Consolidar os totais de cadastros e os atalhos de gestão para iniciar a operação administrativa.
 
 ## Comportamento esperado
 

@@ -156,6 +156,26 @@ function Shell({ user, api, logout, logoutBusy, logoutError }) {
     return () => desktop.removeEventListener("change", closeOnDesktop);
   }, []);
 
+  function containDrawerFocus(event) {
+    if (event.key !== "Tab") return;
+    const dialog = event.currentTarget;
+    const controls = [...dialog.querySelectorAll("a[href], button, input, select, textarea, [tabindex], [contenteditable='true']")]
+      .filter(element => element.tabIndex >= 0 && !element.matches(":disabled") && element.getClientRects().length);
+    const first = controls[0];
+    const last = controls.at(-1);
+    if (!first) {
+      event.preventDefault();
+      return;
+    }
+    if (event.shiftKey && (document.activeElement === first || !controls.includes(document.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !controls.includes(document.activeElement))) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
   function navigateFromDrawer() {
     drawer.current?.close();
     content.current?.focus();
@@ -185,7 +205,7 @@ function Shell({ user, api, logout, logoutBusy, logoutError }) {
       </div>
       <PortalNavigation id="navigation" navigation={navigation} path={path} section={section} compact={compact} />
     </aside>
-    <dialog id="menu-mobile" className="navigation-drawer" aria-labelledby="menu-mobile-title" ref={drawer}
+    <dialog id="menu-mobile" className="navigation-drawer" aria-labelledby="menu-mobile-title" ref={drawer} onKeyDown={containDrawerFocus}
       onClick={event => { if (event.target === event.currentTarget) drawer.current.close(); }}>
       <div className="drawer-inner">
         <div className="sidebar-head">

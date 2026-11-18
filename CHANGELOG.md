@@ -17,6 +17,9 @@ O formato segue Keep a Changelog e as versões seguem o versionamento semântico
 - Testes HTTP e de runtime para validar permissões e persistência.
 
 ### Changed
+
+- Recorte administrativo manual explicitado no PRD e nas specs, preservando os requisitos posteriores do desafio.
+- Arquitetura consolidada com contexto, aplicações, modelo conceitual e ADRs rastreáveis.
 - Makefile como interface operacional, entrypoint com comandos explícitos e Dockerfile com estágios de desenvolvimento e produção.
 - Compose de desenvolvimento com recarga automática e preservação dos volumes existentes.
 - Preparação local em configs/ e massa sintética em dados/, removendo a pasta scripts/ da raiz.
@@ -26,6 +29,12 @@ O formato segue Keep a Changelog e as versões seguem o versionamento semântico
 - Testes de integração localizados na aplicação de domínio e importador administrativo por API em dados/.
 - Logo oficial do projeto aplicado ao login e aos menus do portal, incluindo o modo compacto e a navegação móvel.
 - Enunciado preservado em docs/enunciado.md e README reorganizado com identidade visual e instruções de execução.
+
+### Fixed
+
+- Entradas de usuário e login com caractere nulo são recusadas na validação, preservando as senhas sem normalização implícita.
+
+- Foco do teclado contido no menu móvel durante navegação com Tab e Shift+Tab, preservando Escape e seleção de página.
 
 ### Security
 - Validação de JWT e autorização por papel e unidade nas APIs privadas.

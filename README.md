@@ -50,6 +50,8 @@ Para consultar os contêineres, use `make ps`. Para parar a instância mantendo 
 
 Para desenvolvimento com recarga automática, use `make up ENV=dev`. O Compose base usa o estágio `production` do Dockerfile; o override em `configs/compose.dev.yaml` seleciona `development`, monta o código e usa o comando `dev` do entrypoint. Use o mesmo `ENV` nos comandos seguintes. `make help` lista as operações. `make down` preserva os volumes. Os comandos de teste requerem uv instalado.
 
+A entrega atual é a base administrativa manual. Criar/cancelar reservas e autorizar visitantes pelo agente, confirmações e modo acadêmico são a próxima etapa do desafio. O [PRD](docs/prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) delimita os critérios atuais e posteriores.
+
 ## Documentação
 
 - [Enunciado oficial](docs/enunciado.md)
@@ -73,6 +75,9 @@ Os cinco arquivos de dados iniciais ficam em `dados/`. Identidade e condomínio 
 - [PRD do produto](docs/prd/index.md)
 - [Specs e planos por feature](docs/specs/index.md)
 - [Arquitetura e contratos entre serviços](docs/design/architecture.md)
+- [Contexto e aplicações C4](docs/design/c4-context.md)
+- [Modelo conceitual](docs/design/data-model.md)
+- [ADRs](docs/adr/README.md)
 
 ## Reexecutar os testes da base
 
@@ -86,6 +91,8 @@ COMPOSE_PROJECT_NAME=residencial-aurora-qa AURORA_PORT=8768 make test
 COMPOSE_PROJECT_NAME=residencial-aurora-qa AURORA_PORT=8768 make test-runtime
 COMPOSE_PROJECT_NAME=residencial-aurora-qa make down
 ```
+
+Use `make test-unit` para os testes do toolkit e da validação de identidade. A regressão móvel fica em `make test-ui`, com Playwright Python/Chromium instalados e as variáveis `AURORA_URL` e `AURORA_TEST_ADMIN_PASSWORD` fornecidas por um ambiente sintético de teste; `AURORA_TEST_ADMIN_EMAIL` é opcional. O teste não lê nem imprime a configuração pessoal.
 
 Os testes verificam a API servida pelo proxy do portal. O modo de avaliação do desafio e a chamada ao modelo pertencem ao escopo de integração do agente.
 

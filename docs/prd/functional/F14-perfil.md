@@ -2,7 +2,7 @@
 
 Domínio: Conta | Onda: 3 | Prioridade: 1
 
-Conforms to: NFR01, NFR03
+Requisitos não funcionais relacionados: NFR01, NFR03
 
 ## Descrição
 
@@ -10,8 +10,8 @@ Permitir que cada conta confira nome, e-mail e tipo associados à sessão corren
 
 ## Capacidades
 
-- Consumes: F03.
-- Provides: Permitir que cada conta confira nome, e-mail e tipo associados à sessão corrente.
+- Depende de: F03.
+- Fornece: Permitir que cada conta confira nome, e-mail e tipo associados à sessão corrente.
 
 ## Comportamento esperado
 

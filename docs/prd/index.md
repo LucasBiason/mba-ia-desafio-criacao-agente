@@ -2,6 +2,8 @@
 
 ## 1. Sumário executivo
 
+A entrega atual é a base administrativa manual sobre a qual será construído o assistente do desafio. Ela deve funcionar sem Google ADK, Gemini, fila ou credencial de modelo. A operação administrativa engloba contas, apartamentos e vínculos, áreas comuns, consulta de agenda e reservas, registro de horários de visitas e reservas e manutenção do regulamento versionado.
+
 O Residencial Aurora reúne cadastros do condomínio, agenda e contas em um produto autenticado. Administração mantém usuários, vínculos, áreas comuns e o texto vigente. Moradores consultam somente dados de unidades vinculadas. A base inclui a sessão autenticada do chat para avançar para a integração de agentes. A integração das tools, o provedor de modelos e o adaptador acadêmico têm uma etapa de implementação posterior.
 
 ## 2. Problema e oportunidade
@@ -12,6 +14,8 @@ O Residencial Aurora reúne cadastros do condomínio, agenda e contas em um prod
 | Uma conta se vincula a mais de uma unidade | A identidade da conta sozinha não determina a agenda autorizada | Validar o vínculo nas consultas e fixar a unidade por sessão |
 | Ações de chat podem cobrar ou autorizar acesso | Um pedido mal interpretado pode gravar um efeito indevido | Na integração, implementar confirmação e regras de domínio testáveis fora do modelo |
 | Produto e avaliador usam entradas diferentes | Rotas locais do avaliador não devem virar atalhos do produto | Manter a entrada acadêmica futura isolada do proxy autenticado |
+
+O recorte atual tem como resultado uma administração utilizável, com recusas seguras, integridade dos vínculos, preservação do histórico e recuperação após reinício. Os testes automatizados e a validação humana medem os cenários especificados; não há compromisso de ausência absoluta de defeitos.
 
 A linha de base de tempo de cadastro e esforço de operação ainda não foi medida. Os critérios abaixo são resultados esperados e provas executáveis.
 
@@ -76,12 +80,24 @@ Requisitos não funcionais: [NFR01](non-functional/NFR01-seguranca.md), [NFR02](
 
 Os códigos originais de produto FR01 a FR10 correspondem, pela ordem, a F01 a F10 nesta cópia. Os ACs originais mantêm o número no requisito correspondente. Novos critérios separam a prova da base da prova do agente e da avaliação. O [índice das specs](../specs/index.md) lista as etapas de cada entrega.
 
+### Recorte de entrega e critérios de fechamento
+
+| Etapa | Funcionalidades e critérios | Condição de fechamento |
+| --- | --- | --- |
+| Base administrativa atual | F01–F06, F11, F12 e F14; F07-AC01/AC04/AC06 e segurança/NFR da base; F08-AC04/AC05 e segurança/NFR da base | Fluxos administrativos implementados, recusas e concorrência exercitadas, dados preservados após reinício, documentação coerente e aceite humano explícito |
+| Consultas do morador preservadas | F13 e consultas por vínculo em F02/F05/F07/F08/F14 | Não expor dados de outra conta nem regredir durante o fechamento administrativo |
+| Fronteira já disponível, fora do fechamento administrativo | Sessões persistidas de F09 e mensagem de integração não configurada | Mantém estado observável; não conta como agente concluído |
+| Próxima etapa do desafio | F07-AC02/AC03/AC05; F08-AC01/AC02/AC03; integração de F09 e protocolo de F10 | Blueprint, arquitetura, implementação e avaliação próprios, preservando os IDs e as cinco garantias do enunciado |
+
+Os casos posteriores permanecem no PRD e nos contratos com seu modo explícito. Seu adiamento não reprova o recorte administrativo nem os transforma em aprovados. A aceitação integral do desafio depende de concluí-los. A avaliação da base publica também os casos futuros como não executados quando a matriz global for utilizada.
+
 ## 7. Fora do escopo
 
 - Múltiplos condomínios, pagamentos reais, estornos e cancelamento administrativo de reservas.
 - Cadastro de outros ocupantes da unidade, separação entre proprietário e responsável, controle de comparecimento, documentos e convidados associados a reservas.
 - Publicação em produção, programa de identidade externo e chave real de provedor na base.
 - Misturar o caminho acadêmico futuro com as rotas autenticadas do produto.
+- Nesta entrega administrativa: criar/cancelar reservas e autorizar visitantes pelo chat, executar tools, confirmar cobrança/acesso, selecionar provedor/modelo ou implantar fila de processamento. A fila é hipótese de arquitetura para discussão do blueprint posterior.
 
 ## 8. Grafo de dependências
 

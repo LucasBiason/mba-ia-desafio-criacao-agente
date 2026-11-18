@@ -1,7 +1,7 @@
 # Arquitetura — Residencial Aurora
 
-> Estado: arquitetura da base em refatoração por domínio.
-> Escopo: portal autenticado, cadastros, consultas e fronteira do agente.
+> Estado: arquitetura implementada da base administrativa; revisão de fechamento em andamento.
+> Escopo: administração manual, consultas autenticadas e fronteira já existente; arquitetura interna do agente será definida posteriormente.
 > Fontes: [PRD](../prd/index.md), [Compose](../../compose.yaml) e [specs](../specs/index.md).
 
 ## 1. Objetivo e limites
@@ -10,28 +10,11 @@ Organizar as APIs em serviços com responsabilidade explícita e camadas verific
 
 ## 2. Arquitetura geral
 
+As visões [C1 e C2](c4-context.md) distinguem o limite do sistema das aplicações executáveis. O [modelo conceitual](data-model.md) detalha identidades, cardinalidades e histórico. O blueprint do agente e uma eventual fila não integram a topologia decidida desta etapa.
+
 O portal React é servido pelo Nginx, que encaminha cada recurso ao serviço proprietário. Há oito aplicações FastAPI independentes, dois bancos PostgreSQL e o frontend. O toolkit configura infraestrutura HTTP, enquanto cada aplicação define seu domínio.
 
-~~~mermaid
-flowchart LR
-    U["Administração ou morador"] -->|"HTTP"| W["React e Nginx"]
-    W -->|"HTTP /api/auth"| A["Autenticação"]
-    W -->|"HTTP /api/admin/users"| US["Usuários"]
-    W -->|"HTTP apartamentos"| P["Apartamentos"]
-    W -->|"HTTP áreas"| AR["Áreas comuns"]
-    W -->|"HTTP reservas"| AG["Agenda"]
-    W -->|"HTTP visitas"| V["Visitas"]
-    W -->|"HTTP regulamento"| C["Configurações"]
-    W -->|"HTTP chat"| G["Agente"]
-    A -->|"ORM"| I[("PostgreSQL identidade")]
-    US -->|"ORM"| I
-    P -->|"ORM"| D[("PostgreSQL condomínio")]
-    AR -->|"ORM"| D
-    AG -->|"ORM"| D
-    V -->|"ORM"| D
-    C -->|"ORM"| D
-    G -->|"ORM sessões"| D
-~~~
+As aplicações e os armazenamentos estão na visão [C2](c4-context.md#c2-aplicações-e-persistência).
 
 Os serviços de condomínio compartilham inicialmente o banco existente para preservar IDs, constraints e histórico. Cada repository escreve somente nos modelos do seu domínio. Projeções autorizadas podem consultar vínculos e catálogos necessários no mesmo banco. Separar fisicamente esses bancos exigirá contratos de integração e uma migração própria.
 
@@ -53,25 +36,50 @@ Cada diretório contém main, routers, controllers, validators, repositories, mo
 ## 4. Fluxos de requisições e dados
 
 ~~~mermaid
+---
+title: Requisição privada, identidade e integridade
+---
 sequenceDiagram
     actor U as Usuário
+    participant M as Middleware
+    participant A as Autenticação
     participant R as Router
     participant C as Controller
     participant V as Validator
     participant P as Repository ORM
     participant S as Serializer
-    U->>R: Request com identidade validada pelo middleware
-    R->>C: DTO de entrada e contexto autenticado
-    C->>V: Validar operação e permissão
-    V->>P: Consultas necessárias às invariantes
-    P-->>V: Estado persistido
-    V-->>C: Operação permitida ou erro
-    C->>P: Criar, alterar ou excluir modelo
-    P-->>C: Objeto ORM após flush
-    C->>S: Serializar campos públicos
-    S-->>C: DTO de saída
-    C-->>R: Resultado tipado
-    R-->>U: Response HTTP
+    U->>M: Request com bearer
+    M->>A: Introspecção por HTTP interno
+    alt Sessão inválida ou dependência indisponível
+        A-->>M: Recusa ou falha de dependência
+        M-->>U: 401 ou 503, sem executar a operação
+    else Identidade válida
+        A-->>M: Conta e papel confiáveis
+        M->>R: Request com identidade
+        R->>C: DTO e contexto autenticado
+        C->>V: Validar permissão e regras
+        V->>P: Consultar estado e vínculos
+        P-->>V: Estado persistido
+        alt Regra ou permissão recusada
+            V-->>C: Erro de domínio
+            C-->>R: Recusa sem gravação
+            R-->>U: 403, 404 ou 422
+        else Operação permitida
+            V-->>C: Validação concluída
+            C->>P: Persistir o modelo em transação
+            alt Colisão ou falha de persistência
+                P-->>C: Rollback
+                C-->>R: Conflito ou indisponibilidade
+                R-->>U: 409 ou 503
+            else Persistência confirmada
+                P-->>C: Objeto ORM
+                C->>S: Serializar campos públicos
+                S-->>C: DTO de saída
+                C-->>R: Resultado tipado
+                R-->>U: Response HTTP
+            end
+        end
+    end
 ~~~
 
 Controllers não executam SQL. Validators não escrevem no banco. Repositories abrangem a transação e convertem alterações de objetos em persistência ORM. Constraints e locks mantêm as invariantes sob concorrência.
@@ -80,18 +88,7 @@ Controllers não executam SQL. Validators não escrevem no banco. Repositories a
 
 Conta e sessão de login pertencem à identidade. O código interno da unidade é estável e seu número é único. Uma relação associa no máximo um responsável a cada unidade. Uma conta pode responder por várias unidades. Reservas e autorizações preservam o titular original após uma troca de responsável.
 
-~~~mermaid
-erDiagram
-    CONTA ||--o{ SESSAO_LOGIN : estabelece
-    CONTA ||--o{ RESPONSABILIDADE : assume
-    UNIDADE ||--o| RESPONSABILIDADE : atribui
-    UNIDADE ||--o{ RESERVA : possui
-    AREA ||--o{ RESERVA : recebe
-    UNIDADE ||--o{ AUTORIZACAO : registra
-    UNIDADE ||--o{ SESSAO_CHAT : delimita
-    CONTA ||--o{ SESSAO_CHAT : inicia
-    CONTA |o--o{ VERSAO_REGULAMENTO : publica
-~~~
+O [ER conceitual](data-model.md) representa as cardinalidades e explicita as relações lógicas entre bancos.
 
 O regulamento tem versão zero importada e versões posteriores com conteúdo, autor e horário. Reservas ativas têm exclusividade de área e data. Horários opcionais respeitam os intervalos validados. Os modelos SQLAlchemy mantêm nomes e chaves das tabelas existentes.
 
@@ -119,12 +116,27 @@ O SchemaRepository usa ORM nas cargas e transformações de dados. DDL fica rest
 
 ## 10. Decisões, riscos e validação
 
-| Decisão | Origem | Consequência |
-| --- | --- | --- |
-| Camadas router, controller, validators, repository e serializer | Padrão de desenvolvimento solicitado | Regra explícita na guideline FastAPI e nos gabaritos da sdd-spec |
-| Serviços separados por domínio | Recorte solicitado para o produto | Gateway conserva contratos enquanto processos têm responsabilidades próprias |
-| SQLAlchemy para as escritas | Preferência explícita do usuário | CRUD de aplicação e transformações de dados usam ORM |
-| Health compartilhado e Swagger por serviço | Requisito de operação solicitado | Factory oferece infraestrutura e aplicação fornece a prontidão |
-| Dois bancos existentes nesta etapa | Preservação da base já usada | Separação física adicional requer migração e desenho de integração |
+| Decisão | Origem | Estado | ADR |
+| --- | --- | --- | --- |
+| Serviços por domínio e camadas | Recorte estrutural do produto e F01 | accepted | [ADR-0001](../adr/ADR-0001-servicos-por-dominio-e-camadas.md) |
+| ORM e integridade transacional | Padrão de persistência e F01/F07 | accepted | [ADR-0002](../adr/ADR-0002-orm-e-integridade-transacional.md) |
+| Identidade central e permissão por recurso | F03/F04 e vínculos F02 | accepted | [ADR-0003](../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md) |
+| Toolkit e operação reproduzível | F01 e padrão operacional do produto | accepted | [ADR-0004](../adr/ADR-0004-toolkit-e-operacao-dos-servicos.md) |
+| Regulamento único e versões imutáveis | F06 | accepted | [ADR-0005](../adr/ADR-0005-regulamento-unico-versionado.md) |
+| Dois bancos nesta etapa | Topologia observada; confirmação específica pendente | proposed | [ADR-0006](../adr/ADR-0006-persistencia-compartilhada-da-base.md) |
 
-As migrações precisam ser verificadas em uma instalação limpa e sobre volumes anteriores. Os contratos das specs cobrem recusas, concorrência, reinício e saída pública. A consultoria com ADK/Gemini permanece uma capacidade pendente.
+| Risco ou pendência | Impacto | Mitigação ou próxima decisão | Fonte |
+| --- | --- | --- | --- |
+| Banco de condomínio compartilhado | Acopla migrações e disponibilidade dos serviços | Preservar domínio dos repositories; decidir separação física antes de uma migração própria | ADR-0006 |
+| Introspecção central indisponível | APIs privadas deixam de operar | Falhar fechado, readiness e erro de dependência sem mutação | F03 |
+| Leituras e edições concorrentes | Podem gerar duplicidade ou perda de alteração | Constraints, locks e versão na transação, com recusa explícita | F02/F04/F05/F06 |
+| Agente ainda sem integração | Não cria reservas/autorizações nem confirma ações | Blueprint e implementação posterior; preservar casos futuros como pendentes | F07–F10 |
+| Processamento assíncrono sugerido | Acrescenta confirmação, idempotência e retomada a definir | Discutir no blueprint; fila não substitui exclusividade no armazenamento | Enunciado, garantia 5 |
+
+### Verificações realizadas
+
+As fontes são os modelos, repositories, composição, rotas, specs e PRD versionados. O PRD e os quatorze pacotes de specs têm verificação estrutural estrita. Os links locais e os estados dos seis ADRs foram conferidos. As cinco figuras Mermaid foram renderizadas localmente; capturas, resultados de testes e avaliação permanecem externamente ao repositório. A documentação não concede aceite humano nem afirma que as integrações futuras estão implementadas.
+
+### Handoff para especificação
+
+F01–F06 e F11–F14 usam os ADRs da base; F07/F08 distinguem consultas e horários das mutações futuras pelo agente. F09 preserva sessões e fronteira de indisponibilidade. F10 mantém o contrato acadêmico para etapa posterior. O blueprint futuro deve mapear agente principal, especialistas, tools, sessão, confirmação e exclusividade conforme o enunciado, antes de escolher mecanismo de fila, se aplicável.
