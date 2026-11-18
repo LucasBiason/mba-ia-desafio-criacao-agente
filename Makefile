@@ -2,7 +2,8 @@
 ENV ?= local
 PYTHON ?= python3
 AURORA_PORT ?= 8767
-AURORA_URL ?= http://127.0.0.1:$(AURORA_PORT)
+AURORA_TEST_PORT ?= 8768
+AURORA_URL ?= http://127.0.0.1:$(AURORA_TEST_PORT)
 export AURORA_PORT
 COMPOSE := docker compose
 ifeq ($(ENV),dev)

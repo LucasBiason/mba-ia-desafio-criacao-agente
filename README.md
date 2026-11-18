@@ -83,7 +83,7 @@ Os cinco arquivos de dados iniciais ficam em `dados/`. Identidade e condomínio 
 
 Na instância local do playground, use `make seed-agenda` para preencher vários meses do calendário com reservas sintéticas. Cada uma aparece com a indicação **Teste**. Use `make unseed-agenda` para retirar a massa gerada e voltar aos registros anteriores.
 
-Use um projeto Compose separado para deixar os dados de exercício fora da instância de uso:
+Os testes que alteram dados usam por padrão a porta 8768, separada da porta de uso 8767. Para outra composição de teste, informe `AURORA_URL` ou `AURORA_TEST_PORT`. Use sempre um projeto Compose separado para deixar os dados de exercício fora da instância de uso:
 
 ```sh
 COMPOSE_PROJECT_NAME=residencial-aurora-qa AURORA_PORT=8768 make up
