@@ -92,7 +92,7 @@ COMPOSE_PROJECT_NAME=residencial-aurora-qa AURORA_PORT=8768 make test-runtime
 COMPOSE_PROJECT_NAME=residencial-aurora-qa make down
 ```
 
-Use `make test-unit` para os testes do toolkit e da validação de identidade. A regressão móvel fica em `make test-ui`, com Playwright Python/Chromium instalados e as variáveis `AURORA_URL` e `AURORA_TEST_ADMIN_PASSWORD` fornecidas por um ambiente sintético de teste; `AURORA_TEST_ADMIN_EMAIL` é opcional. O teste não lê nem imprime a configuração pessoal.
+Use `make test-unit` para os testes da validação de identidade da aplicação. Os testes próprios do toolkit pertencem ao projeto original da biblioteca e não acompanham a cópia em packages/. A regressão móvel fica em `make test-ui`, com Playwright Python/Chromium instalados e as variáveis `AURORA_URL` e `AURORA_TEST_ADMIN_PASSWORD` fornecidas por um ambiente sintético de teste; `AURORA_TEST_ADMIN_EMAIL` é opcional. O teste não lê nem imprime a configuração pessoal.
 
 Os testes verificam a API servida pelo proxy do portal. O modo de avaliação do desafio e a chamada ao modelo pertencem ao escopo de integração do agente.
 

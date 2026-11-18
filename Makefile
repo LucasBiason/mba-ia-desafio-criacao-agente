@@ -33,8 +33,8 @@ logs: ## Acompanhar logs (SERVICE opcional)
 	@$(COMPOSE) logs --follow $(SERVICE)
 test: ## Testar a API e o OpenAPI da instância local
 	@AURORA_URL="$(AURORA_URL)" uv run --with pytest pytest services/apartments/tests/integration/test_api.py services/apartments/tests/integration/test_openapi.py -q
-test-unit: ## Testar toolkit e validação de identidade
-	@uv run --with pytest==8.4.2 python -m pytest packages/microservice-toolkit/tests services/authentication/tests -q
+test-unit: ## Testar validação de identidade da aplicação
+	@uv run --with pytest==8.4.2 python -m pytest services/authentication/tests -q
 test-ui: ## Testar foco móvel (requer Playwright e credencial sintética no ambiente)
 	@AURORA_URL="$(AURORA_URL)" $(PYTHON) web/tests/test_mobile_navigation.py
 test-runtime: ## Provar reinício na instância descartável indicada

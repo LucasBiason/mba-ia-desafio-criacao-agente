@@ -18,6 +18,8 @@ O formato segue Keep a Changelog e as versões seguem o versionamento semântico
 
 ### Changed
 
+- Testes próprios do toolkit mantidos em seu projeto de origem, sem duplicação no pacote embarcado.
+
 - Recorte administrativo manual explicitado no PRD e nas specs, preservando os requisitos posteriores do desafio.
 - Arquitetura consolidada com contexto, aplicações, modelo conceitual e ADRs rastreáveis.
 - Makefile como interface operacional, entrypoint com comandos explícitos e Dockerfile com estágios de desenvolvimento e produção.

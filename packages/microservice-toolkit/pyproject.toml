@@ -14,6 +14,3 @@ dev = ["pytest>=8,<10"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/microservice_toolkit"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]

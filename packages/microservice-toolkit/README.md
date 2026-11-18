@@ -14,9 +14,9 @@ O middleware ASGI propaga X-Request-ID e registra serviço, método, template da
 
 O ServiceClient propaga a correlação e aceita catálogo explícito de destinos e um provedor de credencial interna. Não há configuração específica de condomínio na biblioteca.
 
-## Desenvolvimento
+## Distribuição
 
-Execute uv sync e uv run pytest. Para empacotar, use uv build.
+Esta cópia contém o código da biblioteca para uso pelo Aurora. Os testes e o fluxo de desenvolvimento pertencem ao projeto original microservice-toolkit. Para empacotar esta cópia, use uv build.
 
 A primeira versão contém a fundação HTTP. Políticas de negócio, armazenamento, cadastro de usuários e emissão de JWT pertencem às aplicações consumidoras.
 
