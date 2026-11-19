@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "microservice-toolkit"
+version = "0.1.0"
+description = "Fundação para serviços FastAPI com erros seguros, identidade e logs estruturados"
+requires-python = ">=3.12"
+dependencies = ["fastapi>=0.115,<1", "httpx>=0.28,<1", "sqlalchemy>=2.0,<3"]
+
+[dependency-groups]
+dev = ["pytest>=8,<10"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/microservice_toolkit"]

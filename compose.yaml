@@ -1,0 +1,220 @@
+name: residencial-aurora-base
+
+x-api: &api
+  image: residencial-aurora-base-api:local
+  build:
+    context: .
+    target: production
+  init: true
+  healthcheck:
+    test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health', timeout=3).close()"]
+    interval: 5s
+    timeout: 4s
+    retries: 20
+    start_period: 4s
+
+x-endpoints: &endpoints
+  AURORA_AUTH_URL: http://auth:8000
+  AURORA_USERS_URL: http://users:8000
+  AURORA_AGENT_URL: http://agent:8000
+  AURORA_INTERNAL_TOKEN: ${AURORA_INTERNAL_TOKEN:?Execute make setup primeiro.}
+
+services:
+
+  identity-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: aurora_identity
+      POSTGRES_USER: aurora
+      POSTGRES_PASSWORD: ${AURORA_IDENTITY_PASSWORD:?Execute make setup primeiro.}
+    volumes:
+      - identity-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "aurora", "-d", "aurora_identity"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  condo-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: aurora_condo
+      POSTGRES_USER: aurora
+      POSTGRES_PASSWORD: ${AURORA_CONDO_PASSWORD:?Execute make setup primeiro.}
+    volumes:
+      - condo-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "aurora", "-d", "aurora_condo"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  auth:
+    <<: *api
+    command: ["prod"]
+    environment:
+      <<: *endpoints
+      APP_MODULE: services.authentication.main:app
+      ROOT_PATH: /services/auth
+      DATABASE_URL: postgresql://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity
+      AURORA_JWT_KEY: ${AURORA_JWT_KEY:?Execute make setup primeiro.}
+      DEMO_SUPER_PASSWORD: ${DEMO_SUPER_PASSWORD:?Execute make setup primeiro.}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?Execute make setup primeiro.}
+      DEMO_RESIDENT_PASSWORD: ${DEMO_RESIDENT_PASSWORD:?Execute make setup primeiro.}
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      identity-db:
+        condition: service_healthy
+
+  users:
+    <<: *api
+    command: ["prod"]
+    environment:
+      <<: *endpoints
+      APP_MODULE: services.users.main:app
+      ROOT_PATH: /services/users
+      DATABASE_URL: postgresql://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      identity-db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+
+  apartments:
+    <<: *api
+    command: ["prod"]
+    environment:
+      <<: *endpoints
+      APP_MODULE: services.apartments.main:app
+      ROOT_PATH: /services/apartments
+      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      condo-db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+
+  common-areas:
+    <<: *api
+    command: ["prod"]
+    environment:
+      <<: *endpoints
+      APP_MODULE: services.common_areas.main:app
+      ROOT_PATH: /services/common-areas
+      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      condo-db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+
+  agenda:
+    <<: *api
+    command: ["prod"]
+    environment:
+      <<: *endpoints
+      APP_MODULE: services.agenda.main:app
+      ROOT_PATH: /services/agenda
+      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      condo-db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+
+  visits:
+    <<: *api
+    command: ["prod"]
+    environment:
+      <<: *endpoints
+      APP_MODULE: services.visits.main:app
+      ROOT_PATH: /services/visits
+      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      condo-db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+
+  settings:
+    <<: *api
+    command: ["prod"]
+    environment:
+      <<: *endpoints
+      APP_MODULE: services.settings.main:app
+      ROOT_PATH: /services/settings
+      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      condo-db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+
+  agent:
+    <<: *api
+    command: ["prod"]
+    environment:
+      <<: *endpoints
+      APP_MODULE: services.agent.main:app
+      ROOT_PATH: /services/agent
+      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      condo-db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    ports:
+      - "127.0.0.1:${AURORA_PORT:-8767}:80"
+    depends_on:
+      auth:
+        condition: service_healthy
+      users:
+        condition: service_healthy
+      apartments:
+        condition: service_healthy
+      common-areas:
+        condition: service_healthy
+      agenda:
+        condition: service_healthy
+      visits:
+        condition: service_healthy
+      settings:
+        condition: service_healthy
+      agent:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  identity-data:
+  condo-data:
