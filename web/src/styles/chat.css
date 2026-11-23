@@ -1,0 +1,31 @@
+.aurora-chat { display:flex; flex-direction:column; padding:0; overflow:hidden; min-height:26rem; height:min(72vh,48rem); }
+.aurora-chat-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 1.2rem; border-bottom:1px solid var(--line, #dce2e8); }
+.aurora-chat-header small { display:block; margin-top:.2rem; opacity:.7; }
+.aurora-chat-tools { display:flex; align-items:center; flex-wrap:wrap; gap:.5rem; }
+.aurora-chat-timeline { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; display:flex; flex-direction:column; align-items:flex-start; gap:1rem; padding:1.2rem; }
+.aurora-chat-empty { margin:auto; text-align:center; max-width:28rem; color:var(--muted); }
+.aurora-chat-bubble { max-width:min(88%,44rem); border-radius:1rem 1rem 1rem .25rem; padding:.85rem 1rem; background:var(--soft, #f2f5f7); overflow-wrap:anywhere; flex-shrink:0; }
+.aurora-chat-bubble small { opacity:.7; font-size:.72rem; }
+.aurora-chat-bubble p { margin:.35rem 0 0; white-space:pre-wrap; line-height:1.6; }
+.aurora-chat-mine { align-self:flex-end; color:white; background:var(--brand, #176b65); border-radius:1rem 1rem .25rem 1rem; }
+.aurora-chat-confirmation { width:min(100%,34rem); padding:1rem; border:1px solid var(--line, #dce2e8); border-radius:1rem; flex-shrink:0; }
+.aurora-chat-confirmation h3 { margin:0 0 .4rem; }
+.aurora-chat-confirmation dl { display:grid; grid-template-columns:auto 1fr; gap:.3rem 1rem; }
+.aurora-chat-confirmation dd { margin:0; overflow-wrap:anywhere; }
+.aurora-chat-confirmation dt { opacity:.7; }
+.aurora-chat-notice { align-self:stretch; padding:.7rem 1rem; border-left:3px solid var(--brand, #176b65); background:var(--soft, #f2f5f7); border-radius:.4rem; flex-shrink:0; }
+.aurora-chat-notice[role=alert] { border-color:#b64d3d; }
+.aurora-chat-notice p { margin:.2rem 0 .5rem; }
+.aurora-chat-compose { display:grid; grid-template-columns:1fr auto; align-items:end; gap:.6rem; border-top:1px solid var(--line, #dce2e8); padding:.85rem 1rem; }
+.aurora-chat-compose textarea { resize:vertical; min-height:3.4rem; max-height:8rem; width:100%; }
+.aurora-chat-input-label { grid-column:1/-1; font-size:.8rem; }
+@media(max-width:640px) { .aurora-chat { height:72dvh; min-height:24rem; } .aurora-chat-header { align-items:flex-start; padding:.8rem; } .aurora-chat-header .aurora-chat-tools { justify-content:flex-end; } .aurora-chat-timeline { padding:.8rem; } .aurora-chat-bubble { max-width:94%; } }
+
+.aurora-chat-reservations { margin-top: .5rem; min-width: min(16rem, 100%); }
+.aurora-chat-reservations h3 { display: flex; align-items: center; gap: .55rem; margin: 0 0 .6rem; font-size: .95rem; }
+.aurora-chat-reservations h3 span { color: var(--brand, #176b65); background: var(--soft, #f2f5f7); border: 1px solid var(--line, #dce2e8); padding: .04rem .45rem; border-radius: 999px; font-size: .75rem; }
+.aurora-chat-reservations ul { display: grid; gap: .45rem; list-style: none; padding: 0; margin: 0; }
+.aurora-chat-reservations li { background: var(--paper, #fff); color: var(--ink, #202a32); padding: .65rem .75rem; border: 1px solid var(--line, #dce2e8); border-radius: .65rem; }
+.aurora-chat-reservation-title { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .25rem .75rem; }
+.aurora-chat-reservation-date { margin-top: .22rem; font-size: .9rem; }
+.aurora-chat-reservation-code { margin-top: .22rem; font-size: .72rem; color: var(--muted); }

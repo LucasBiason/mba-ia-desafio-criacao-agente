@@ -1,4 +1,4 @@
-from services.http_types import Hour
+from aurora_toolkit.http_types import Hour
 from microservice_toolkit.schemas import RequestSchema
 
 

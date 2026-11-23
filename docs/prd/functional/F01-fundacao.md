@@ -6,7 +6,7 @@ Requisitos não funcionais relacionados: NFR04, NFR02
 
 ## Descrição
 
-Distribuir uma base local que compile, inicie e permita verificar separadamente as superfícies de identidade, cadastros, interface e futura integração do agente.
+Distribuir uma base local que compile, inicie e permita verificar separadamente as superfícies de identidade, cadastros, interface e integração opcional do agente.
 
 Como operador, quero subir o ambiente local com um comando para testar o produto sem configurar um provedor de modelos.
 
@@ -21,7 +21,7 @@ A referência de produto original é FR01. A correspondência dos critérios ant
 ## Comportamento esperado
 
 - **Dado** um clone com Docker e o cliente Compose e os dados iniciais
-- **Quando** validar o manifesto, subir a composição de teste, conferir serviços saudáveis e abrir a origem publicada
+- **Quando** validar o manifesto, subir os dois jobs de preparação e a composição de teste, conferir os onze serviços contínuos saudáveis e abrir a origem publicada
 - **Então** a composição inicia as onze unidades e carrega a tela de login.
 
 - **Dado** uma configuração obrigatória de autenticação ausente numa composição descartável
@@ -36,12 +36,12 @@ A referência de produto original é FR01. A correspondência dos critérios ant
 
 | ID | Condição | Resultado esperado | Como verificar |
 | --- | --- | --- | --- |
-| F01-AC01 | Um clone com Docker e o cliente Compose e os dados iniciais | A composição inicia as onze unidades e carrega a tela de login | Validar o manifesto, subir a composição de teste, conferir serviços saudáveis e abrir a origem publicada |
+| F01-AC01 | Um clone com Docker e o cliente Compose e os dados iniciais | A composição inicia as onze unidades e carrega a tela de login | Validar o manifesto, subir os dois jobs de preparação e a composição de teste, conferir os onze serviços contínuos saudáveis e abrir a origem publicada |
 | F01-AC02 | Uma configuração obrigatória de autenticação ausente numa composição descartável | O Compose recusa a configuração ou a autenticação fica sem prontidão. A falha identifica a variável sem divulgar segredo | Omitir a configuração em sandbox e comparar status do serviço e saída sanitizada |
 | F01-AC03 | Uma edição persistida em volume existente | A edição continua após reiniciar e a carga inicial não a sobrescreve | Criar uma conta e alterar um cadastro, reiniciar os serviços e consultar os dois pelas mesmas APIs |
 | F01-AC04 | Uma aplicação criada pela biblioteca e uma chamada válida, recusada ou com erro | A resposta mantém correlação, falhas não expõem payloads e os logs contêm apenas os campos operacionais permitidos | Executar os testes HTTP da biblioteca e conferir os serviços com chamadas autenticadas |
-| F01-AC05 | Cadastros iniciais ausentes ou já importados e acesso administrativo válido | O importador usa as APIs e a repetição não duplica usuários, apartamentos ou áreas | Executar dados/importar_cadastros.py em ambiente de QA e comparar registros e JSONs antes e depois |
-| F01-AC06 | Serviços construídos com o padrão FastAPI e toolkit | Cada domínio tem camadas separadas, escritas ORM, health centralizado e documentação OpenAPI | Executar o gate de camadas e conferir health, Swagger e schemas dos oito serviços |
+| F01-AC05 | Cadastros iniciais ausentes ou já importados e acesso administrativo válido | O importador usa as APIs e a repetição não duplica usuários, apartamentos ou áreas | Executar tools/importar_cadastros.py em ambiente de QA e comparar registros e JSONs antes e depois |
+| F01-AC06 | Serviços construídos com o padrão FastAPI e toolkit | Cada domínio tem camadas separadas, escritas ORM, health de liveness centralizado e documentação OpenAPI | Executar o gate de camadas, conferir Swagger e schemas dos oito serviços e consultar health com banco indisponível |
 
 A etapa de cada prova está identificada na [spec desta funcionalidade](../../specs/F01-fundacao/spec.md#7-estratégia-de-testes).
 
@@ -58,4 +58,4 @@ Publicação em produção, provedores de identidade externos e ativação do av
 
 ## Tratamento de erros
 
-Configuração obrigatória ausente ou banco inacessível impedem prontidão da dependência. O diagnóstico indica a falha sem imprimir credenciais. Uma indisponibilidade da fronteira do agente afeta a mensagem de chat e deixa os cadastros disponíveis.
+Configuração obrigatória ausente impede a partida. Banco inacessível impede a preparação inicial e retorna erro de dependência nas operações de negócio; o health de liveness permanece disponível. O diagnóstico indica a falha sem imprimir credenciais. Uma indisponibilidade da fronteira do agente afeta a mensagem de chat e deixa os cadastros disponíveis.

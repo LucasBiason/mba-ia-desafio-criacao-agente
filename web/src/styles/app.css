@@ -413,3 +413,12 @@ details > .regulation-copy { margin-top: 1rem; padding-top: .7rem; border-top: 1
 @media (prefers-reduced-motion: reduce) {
   .syn-button, .link-button { transition: none; }
 }
+
+.table-row-clickable { cursor: pointer; }
+.table-row-clickable:hover { background: color-mix(in srgb, currentColor 4%, transparent); }
+.reservation-details { width: min(35rem, calc(100% - 2rem)); max-height: 88dvh; overflow: auto; padding: 1.5rem; }
+.reservation-details::backdrop { background: rgb(22 31 27 / 35%); }
+.reservation-details h2 { margin: 0; }
+.reservation-details dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: .75rem 1.25rem; margin: 0; }
+.reservation-details dt { opacity: .72; font-size: .875rem; }
+.reservation-details dd { margin: .2rem 0 0; overflow-wrap: anywhere; }

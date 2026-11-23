@@ -1,0 +1,94 @@
+# Local academic lab only. Never merge with compose.yaml.
+name: aurora-academic-lab
+
+x-academic: &academic
+  image: ${AURORA_LAB_IMAGE:-aurora-academic-agent:local}
+  build:
+    context: .
+    dockerfile: Dockerfile.academic
+  init: true
+  environment: &academic-env
+    AURORA_DOMAIN_DSN: postgresql://aurora_academic:local_lab_only@academic-db:5432/aurora_academic
+    AURORA_SESSION_DSN: postgresql+psycopg://aurora_academic:local_lab_only@academic-db:5432/aurora_academic
+    AURORA_POLICY_ENABLED: "${AURORA_POLICY_ENABLED:-0}"
+    AURORA_FAKE_MODEL: "${AURORA_FAKE_MODEL:-1}"
+    AURORA_MODEL: "${AURORA_MODEL:-gemini-2.5-flash-lite}"
+    # Opt in explicitly using environment; no .env file is copied into image.
+    GOOGLE_API_KEY: "${GOOGLE_API_KEY:-}"
+  networks: [academic]
+  read_only: true
+  tmpfs: [/tmp]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  healthcheck:
+    test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/docs', timeout=3).close()"]
+    interval: 5s
+    timeout: 4s
+    retries: 20
+    start_period: 10s
+
+services:
+  academic-db:
+    image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+    environment:
+      POSTGRES_DB: aurora_academic
+      POSTGRES_USER: aurora_academic
+      POSTGRES_PASSWORD: local_lab_only
+    volumes: [academic-db-data:/var/lib/postgresql/data]
+    networks: [academic]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "aurora_academic", "-d", "aurora_academic"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  academic-init:
+    <<: *academic
+    command: ["init"]
+    restart: "no"
+    healthcheck:
+      disable: true
+    depends_on:
+      academic-db:
+        condition: service_healthy
+
+  agent-a:
+    <<: *academic
+    environment:
+      <<: *academic-env
+      AURORA_REPLICA_ID: agent-a
+    command: ["serve", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      academic-init:
+        condition: service_completed_successfully
+
+  agent-b:
+    <<: *academic
+    environment:
+      <<: *academic-env
+      AURORA_REPLICA_ID: agent-b
+    command: ["serve", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      academic-init:
+        condition: service_completed_successfully
+
+  academic-lb:
+    image: nginx:alpine@sha256:4a73073bd557c65b759505da037898b61f1be6cbcc3c2c3aeac22d2a470c1752
+    ports: ["127.0.0.1:${AURORA_LAB_PORT:-8800}:80"]
+    volumes: ["./configs/nginx.academic.conf:/etc/nginx/conf.d/default.conf:ro"]
+    networks: [academic]
+    depends_on:
+      agent-a:
+        condition: service_healthy
+      agent-b:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/docs"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+
+networks:
+  academic:
+volumes:
+  academic-db-data:

@@ -14,6 +14,9 @@ x-api: &api
     start_period: 4s
 
 x-endpoints: &endpoints
+  SERVICE_ENVIRONMENT: production
+  REQUIRED_SECRETS: AURORA_INTERNAL_TOKEN
+  INTERNAL_TOKEN_ENV: AURORA_INTERNAL_TOKEN
   AURORA_AUTH_URL: http://auth:8000
   AURORA_USERS_URL: http://users:8000
   AURORA_AGENT_URL: http://agent:8000
@@ -49,6 +52,39 @@ services:
       timeout: 3s
       retries: 20
 
+  identity-init:
+    <<: *api
+    command: ["initialize", "identity"]
+    healthcheck:
+      disable: true
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+      DEMO_SUPER_PASSWORD: ${DEMO_SUPER_PASSWORD:?Execute make setup primeiro.}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?Execute make setup primeiro.}
+      DEMO_RESIDENT_PASSWORD: ${DEMO_RESIDENT_PASSWORD:?Execute make setup primeiro.}
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      identity-db:
+        condition: service_healthy
+
+  condo-init:
+    <<: *api
+    command: ["initialize", "condominium"]
+    healthcheck:
+      disable: true
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ./dados:/app/dados:ro
+    depends_on:
+      condo-db:
+        condition: service_healthy
+
   auth:
     <<: *api
     command: ["prod"]
@@ -56,17 +92,15 @@ services:
       <<: *endpoints
       APP_MODULE: services.authentication.main:app
       ROOT_PATH: /services/auth
-      DATABASE_URL: postgresql://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity?connect_timeout=3
+      REQUIRED_SECRETS: AURORA_INTERNAL_TOKEN,AURORA_JWT_KEY
       AURORA_JWT_KEY: ${AURORA_JWT_KEY:?Execute make setup primeiro.}
-      DEMO_SUPER_PASSWORD: ${DEMO_SUPER_PASSWORD:?Execute make setup primeiro.}
-      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?Execute make setup primeiro.}
-      DEMO_RESIDENT_PASSWORD: ${DEMO_RESIDENT_PASSWORD:?Execute make setup primeiro.}
       AURORA_DATA_DIR: /app/dados
     volumes:
       - ./dados:/app/dados:ro
     depends_on:
-      identity-db:
-        condition: service_healthy
+      identity-init:
+        condition: service_completed_successfully
 
   users:
     <<: *api
@@ -75,13 +109,13 @@ services:
       <<: *endpoints
       APP_MODULE: services.users.main:app
       ROOT_PATH: /services/users
-      DATABASE_URL: postgresql://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity?connect_timeout=3
       AURORA_DATA_DIR: /app/dados
     volumes:
       - ./dados:/app/dados:ro
     depends_on:
-      identity-db:
-        condition: service_healthy
+      identity-init:
+        condition: service_completed_successfully
       auth:
         condition: service_healthy
 
@@ -92,13 +126,13 @@ services:
       <<: *endpoints
       APP_MODULE: services.apartments.main:app
       ROOT_PATH: /services/apartments
-      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
       AURORA_DATA_DIR: /app/dados
     volumes:
       - ./dados:/app/dados:ro
     depends_on:
-      condo-db:
-        condition: service_healthy
+      condo-init:
+        condition: service_completed_successfully
       auth:
         condition: service_healthy
 
@@ -109,13 +143,13 @@ services:
       <<: *endpoints
       APP_MODULE: services.common_areas.main:app
       ROOT_PATH: /services/common-areas
-      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
       AURORA_DATA_DIR: /app/dados
     volumes:
       - ./dados:/app/dados:ro
     depends_on:
-      condo-db:
-        condition: service_healthy
+      condo-init:
+        condition: service_completed_successfully
       auth:
         condition: service_healthy
 
@@ -126,13 +160,13 @@ services:
       <<: *endpoints
       APP_MODULE: services.agenda.main:app
       ROOT_PATH: /services/agenda
-      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
       AURORA_DATA_DIR: /app/dados
     volumes:
       - ./dados:/app/dados:ro
     depends_on:
-      condo-db:
-        condition: service_healthy
+      condo-init:
+        condition: service_completed_successfully
       auth:
         condition: service_healthy
 
@@ -143,30 +177,30 @@ services:
       <<: *endpoints
       APP_MODULE: services.visits.main:app
       ROOT_PATH: /services/visits
-      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
       AURORA_DATA_DIR: /app/dados
     volumes:
       - ./dados:/app/dados:ro
     depends_on:
-      condo-db:
-        condition: service_healthy
+      condo-init:
+        condition: service_completed_successfully
       auth:
         condition: service_healthy
 
-  settings:
+  parameters:
     <<: *api
     command: ["prod"]
     environment:
       <<: *endpoints
-      APP_MODULE: services.settings.main:app
-      ROOT_PATH: /services/settings
-      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      APP_MODULE: services.parameters.main:app
+      ROOT_PATH: /services/parameters
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
       AURORA_DATA_DIR: /app/dados
     volumes:
       - ./dados:/app/dados:ro
     depends_on:
-      condo-db:
-        condition: service_healthy
+      condo-init:
+        condition: service_completed_successfully
       auth:
         condition: service_healthy
 
@@ -177,13 +211,13 @@ services:
       <<: *endpoints
       APP_MODULE: services.agent.main:app
       ROOT_PATH: /services/agent
-      DATABASE_URL: postgresql://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
       AURORA_DATA_DIR: /app/dados
     volumes:
       - ./dados:/app/dados:ro
     depends_on:
-      condo-db:
-        condition: service_healthy
+      condo-init:
+        condition: service_completed_successfully
       auth:
         condition: service_healthy
 
@@ -204,7 +238,7 @@ services:
         condition: service_healthy
       visits:
         condition: service_healthy
-      settings:
+      parameters:
         condition: service_healthy
       agent:
         condition: service_healthy

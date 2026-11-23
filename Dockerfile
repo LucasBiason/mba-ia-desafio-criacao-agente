@@ -4,6 +4,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir uv==0.13.7
 COPY pyproject.toml uv.lock ./
 COPY packages/microservice-toolkit ./packages/microservice-toolkit
+COPY packages/aurora-toolkit ./packages/aurora-toolkit
 RUN uv sync --frozen --no-dev --no-install-project
 COPY services ./services
 COPY --chmod=755 entrypoint.sh /entrypoint.sh

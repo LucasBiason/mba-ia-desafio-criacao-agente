@@ -6,9 +6,9 @@ Requisitos não funcionais relacionados: NFR04, NFR01, NFR03
 
 ## Descrição
 
-O modo acadêmico pertence à etapa posterior à integração do assistente. Seus critérios permanecem publicados e ainda não representam a avaliação de fechamento da administração manual.
+A API acadêmica está implementada separadamente da base. O aceite integral depende dos 15 passos em clone limpo com Gemini real e publicação do corte aprovado.
 
-Definir a fronteira da API avaliada e os procedimentos para validar o desafio quando a integração de agentes estiver concluída.
+Entregar as seis rotas do enunciado, comandos de restauração e subida e evidência do roteiro completo, preservando as cinco garantias.
 
 Como avaliador, quero executar o protocolo documentado em ambiente local isolado e verificar as garantias pelas rotas e pelos dados.
 

@@ -5,4 +5,6 @@ class ApartmentSerializer:
     @staticmethod
     def serialize(row):
         apartment, resident_id = row
-        return ApartmentRead(id=apartment.id, number=apartment.number, resident_id=resident_id)
+        return ApartmentRead(
+            id=apartment.id, number=apartment.number, resident_id=resident_id
+        )

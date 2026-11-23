@@ -18,6 +18,13 @@ O formato segue Keep a Changelog e as versões seguem o versionamento semântico
 
 ### Changed
 
+- Framework genérico organizado em submódulos, com lifespan de validação de secrets e infraestrutura ORM centralizados.
+- Convenções e permissões do residencial isoladas no aurora-toolkit; serviço de configurações renomeado para parameters.
+- Health definido como liveness e preparação de schema/fixtures movida para jobs explícitos, removendo a camada services/persistence e o upgrade legado.
+
+- Toolkit reorganizado em factory por fases, router de health, autenticação e OpenAPI separados, com operações ORM transacionais e documentação pública no projeto da biblioteca.
+- Diagnósticos estruturados por ambiente, logs de exceção correlacionados e remoção do README/lock redundantes do pacote incorporado.
+
 - Testes próprios do toolkit mantidos em seu projeto de origem, sem duplicação no pacote embarcado.
 
 - Recorte administrativo manual explicitado no PRD e nas specs, preservando os requisitos posteriores do desafio.

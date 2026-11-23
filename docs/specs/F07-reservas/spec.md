@@ -9,23 +9,23 @@ prd_source: docs/prd/functional/F07-reservas.md
 
 ## 1. Visão técnica
 
-A base fornece calendário administrativo por área, localização por código e edição do horário. O morador visualiza suas reservas na unidade selecionada. As operações de criar e cancelar reservas serão integradas no roteiro de agentes. Elas exigem código estável, exclusividade no armazenamento e validação de titularidade no cancelamento.
+A base fornece calendário administrativo por área, localização por código e edição do horário. O morador visualiza suas reservas na unidade selecionada. No agente opt-in, criar e cancelar são tools com isolamento de unidade e recibo baseado no resultado do domínio. Elas exigem código estável, exclusividade no armazenamento e validação de titularidade no cancelamento.
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F07](../../prd/functional/F07-reservas.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal opt-in de QA e API acadêmica. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
-O painel chama a API autenticada e usa filtros por área, data e estado. A interface do morador envia somente a unidade selecionada. A API verifica vínculo em cada leitura. O agente e as futuras tools recebem o contexto autenticado do servidor e executam regras do domínio antes de gravar.
+O painel chama a API autenticada e usa filtros por área, data e estado. A interface do morador envia somente a unidade selecionada. A API verifica vínculo em cada leitura. O agente e as tools recebem o contexto autenticado do servidor e executam regras do domínio antes de gravar.
 
 ## 3. Decisões técnicas
 
 Decisões arquiteturais relacionadas: [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md).
 
-O calendário abre no mês atual, com seleção de todas as áreas ou de uma área. No recorte consolidado a cor identifica a área. Clicar em um dia abre a lista completa daquele dia, inclusive quando está vazio. Buscar pelo código abre a área, o mês e o dia daquele registro. Os horários de início e fim são opcionais, devem ser preenchidos juntos e respeitar a ordem no mesmo dia. O banco preparado contém o índice parcial `reservations_active_slot` para registros ativos por área e data. A futura ferramenta escreve em transação e converte a colisão desse índice em indisponibilidade. Um código já emitido permanece indisponível após cancelamento. Por consistência, escolher uma única fonte da taxa e gravar o valor usado no efeito.
+O calendário abre no mês atual, com seleção de todas as áreas ou de uma área. No recorte consolidado a cor identifica a área. Clicar em um dia abre a lista completa daquele dia, inclusive quando está vazio. Buscar pelo código abre a área, o mês e o dia daquele registro. Os horários de início e fim são opcionais, devem ser preenchidos juntos e respeitar a ordem no mesmo dia. O banco preparado contém o índice parcial `reservations_active_slot` para registros ativos por área e data. A ferramenta escreve em transação e converte a colisão desse índice em indisponibilidade. Um código já emitido permanece indisponível após cancelamento. Por consistência, escolher uma única fonte da taxa e gravar o valor usado no efeito.
 
 ## 4. Visão de componentes
 
@@ -44,7 +44,7 @@ As schemas Pydantic validam tipo e formato. Validators não gravam e controllers
 
 GET `/api/admin/reservations` para administração aceita `area_id`, `date` e `status` opcionais. GET `/api/resident/reservations?apartment=101` para morador; a unidade precisa pertencer à sessão autenticada do produto. A projeção inclui `code`, `apartment`, `area_id`, `area_name`, `date`, `fee_cents`, `status`, `start_time` e `end_time`. A administração recebe também `resident_id`, usado para mostrar o nome do titular. PATCH `/api/admin/reservations/{code}/hours` recebe os dois horários em `HH:MM` ou ambos nulos e devolve o registro atualizado. Aprovação e gravação no fluxo acadêmico são contratos de F09 e F10.
 
-A API recusa unidade fora do vínculo sem expor dados. A futura disputa devolve indisponibilidade sem identificar o vencedor. Falha de persistência não confirma efeito.
+A API recusa unidade fora do vínculo sem expor dados. A disputa devolve indisponibilidade sem identificar o vencedor. Falha de persistência não confirma efeito.
 
 ## 6. Modelo de dados
 

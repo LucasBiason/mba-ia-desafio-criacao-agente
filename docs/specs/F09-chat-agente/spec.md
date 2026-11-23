@@ -9,17 +9,17 @@ prd_source: docs/prd/functional/F09-chat-agente.md
 
 ## 1. Visão técnica
 
-A base permite abrir e retomar sessões pelo perfil morador. A tela informa a indisponibilidade do assistente quando o agente não está configurado. A aula implementará, em entregas pequenas, um principal que encaminha a especialistas, tools de domínio, consulta ao trecho adequado do regulamento e retomada de confirmações.
+A base permite abrir e retomar sessões pelo perfil morador. A tela informa a indisponibilidade do assistente quando o agente não está configurado. Quando habilitado no perfil de QA, o principal encaminha a especialistas e tools de domínio. Consultas de agenda e dúvidas de regulamento são distintas. A UI projeta reservas em lista, limpa a mensagem enviada imediatamente e mantém o novo rascunho durante a resposta.
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F09](../../prd/functional/F09-chat-agente.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal opt-in de QA e API acadêmica. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
-O frontend envia mensagens à API autenticada. A API encaminhará à fronteira privada do serviço de agente somente depois de autorizar usuário e unidade. O contexto de identidade vem do servidor, e o especialista usa portas de domínio para consultar e registrar efeitos. A visão acadêmica usa um adaptador isolado para o contexto inicial fornecido pelo avaliador.
+O frontend envia mensagens à API autenticada. A API encaminha à fronteira privada do serviço de agente somente depois de autorizar usuário e unidade. O contexto de identidade vem do servidor, e o especialista usa portas de domínio para consultar e registrar efeitos. A visão acadêmica usa um adaptador isolado para o contexto inicial fornecido pelo avaliador.
 
 ## 3. Decisões técnicas
 
@@ -44,7 +44,7 @@ As schemas Pydantic validam tipo e formato. Validators não gravam e controllers
 
 ## 5. Contratos de interface
 
-POST `/api/resident/chat/sessions` recebe `apartment` e devolve 201 com `id`, `apartment`, `created_at` e status `awaiting_agent`. GET sobre a coleção ou `/{id}` lista ou consulta sessões do titular ainda vinculado. POST `/api/resident/chat/sessions/{id}/messages` recebe `message` de 1 a 2000 caracteres após remover espaços nas extremidades. A API encaminha ao destino privado `/internal/chat/messages` com identificação reconstruída no servidor. A fronteira devolve HTTP 503 com `AGENT_NOT_CONFIGURED` até a aula conectar o agente. Mensagens sem processamento ficam fora do histórico persistido. F10 detalha os contratos futuros de conversa, eventos e confirmação acadêmica. O produto não publica a interface interna do agente.
+POST `/api/resident/chat/sessions` recebe `apartment` e devolve 201 com `id`, `apartment`, `created_at` e status `awaiting_agent`. GET sobre a coleção ou `/{id}` lista ou consulta sessões do titular ainda vinculado. POST `/api/resident/chat/sessions/{id}/messages` recebe `message` de 1 a 2000 caracteres após remover espaços nas extremidades. A API encaminha ao destino privado `/internal/chat/messages` com identificação reconstruída no servidor. Com o agente desabilitado, a fronteira devolve HTTP 503 com `AGENT_NOT_CONFIGURED`. Quando habilitado, o portal lê histórico paginado e confirmações por identidade; arquivar a exibição é reversível e não apaga efeitos. F10 detalha os contratos separados de conversa, eventos e confirmação acadêmica. O produto não publica a interface interna do agente.
 
 Unidade sem vínculo retorna recusa. Sessão inexistente ou alheia não expõe dados. Sem agente configurado, mensagem resulta em indisponibilidade observável e não indica sucesso. Na integração, falhas de modelo ou gravação não concedem efeitos.
 

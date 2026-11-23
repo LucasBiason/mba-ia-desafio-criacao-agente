@@ -23,7 +23,7 @@ export async function request(path, { body, token, method = "GET", signal } = {}
     });
   } catch (error) {
     if (error.name === "AbortError") throw error;
-    throw new Error("Não foi possível conectar. Verifique a conexão e tente de novo.");
+    throw new Error("Não foi possível conectar. Verifique a conexão e tente de novo.", { cause: error });
   }
   const data = response.headers.get("content-type")?.includes("json")
     ? await response.json()

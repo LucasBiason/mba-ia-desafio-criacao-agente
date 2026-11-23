@@ -6,7 +6,7 @@ Requisitos não funcionais relacionados: NFR01, NFR02, NFR03
 
 ## Descrição
 
-Nesta entrega administrativa, o escopo é consulta da agenda e das reservas e edição dos horários. Criação, cobrança, confirmação e cancelamento pelo agente são a etapa posterior.
+A base cobre consulta e horários. O agente opt-in permite consultar disponibilidade por área e data, reservar e cancelar a reserva própria. Cobrança positiva exige decisão externa; não há execução de pagamento.
 
 Consultar reservas em um calendário por área, localizar pelo código e registrar horários. Criar e cancelar reservas no fluxo de integração.
 
@@ -18,7 +18,7 @@ A referência de produto original é FR07. A correspondência dos critérios ant
 
 - Depende de: F02, F05.
 - Fornece: Projeção de agenda consumida pela interface e contrato de operações futuras com identidade e efeito controlados.
-- Integração: O painel chama a API autenticada e usa filtros por área, data e estado. A interface do morador envia somente a unidade selecionada. A API verifica vínculo em cada leitura. O agente e as futuras tools recebem o contexto autenticado do servidor e executam regras do domínio antes de gravar.
+- Integração: O painel chama a API autenticada e usa filtros por área, data e estado. A interface do morador envia somente a unidade selecionada. A API verifica vínculo em cada leitura. O agente e as tools recebem o contexto autenticado do servidor e executam regras do domínio antes de gravar.
 
 ## Comportamento esperado
 
@@ -71,4 +71,4 @@ Criação e cancelamento administrativos, divisão da data em vários intervalos
 
 ## Tratamento de erros
 
-A API recusa unidade fora do vínculo sem expor dados. A futura disputa devolve indisponibilidade sem identificar o vencedor. Falha de persistência não confirma efeito.
+A API recusa unidade fora do vínculo sem expor dados. A disputa devolve indisponibilidade sem identificar o vencedor. Falha de persistência não confirma efeito.

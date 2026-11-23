@@ -1,0 +1,16 @@
+**
+!pyproject.toml
+!uv.lock
+!packages/
+!packages/**
+!services/
+!services/**
+!dados/
+!dados/**
+**/__pycache__/
+**/*.pyc
+**/.env
+**/.env.*
+**/.venv/
+**/.git/
+**/tests/

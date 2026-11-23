@@ -15,7 +15,7 @@ A intenção de produto, as regras e os marcos de aceite vêm do [requisito F01]
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal opt-in de QA e API acadêmica. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
@@ -23,24 +23,26 @@ O navegador chama o proxy em uma única origem. O proxy encaminha autenticação
 
 ## 3. Decisões técnicas
 
-Decisões arquiteturais relacionadas: [ADR-0001](../../adr/ADR-0001-servicos-por-dominio-e-camadas.md), [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md), [ADR-0004](../../adr/ADR-0004-toolkit-e-operacao-dos-servicos.md), [ADR-0006](../../adr/ADR-0006-persistencia-compartilhada-da-base.md) (proposto).
+Decisões arquiteturais relacionadas: [ADR-0001](../../adr/ADR-0001-servicos-por-dominio-e-camadas.md), [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md), [ADR-0004](../../adr/ADR-0004-toolkit-e-operacao-dos-servicos.md), [ADR-0006](../../adr/ADR-0006-persistencia-compartilhada-da-base.md) (proposto) e [ADR-0007](../../adr/ADR-0007-framework-e-ciclo-de-vida.md).
 
 Usar dois bancos de fronteira, identidade e condomínio, preservados provisoriamente para que os serviços de negócio consumam a identidade validada sem manipular a tabela de contas. O isolamento físico por serviço permanece proposto no ADR-0006. A base inicia sem credencial de modelo. A montagem das fixtures é somente leitura e a carga inicial é idempotente.
+
+O toolkit cria o lifespan e valida REQUIRED_SECRETS. Os main.py não abrem banco, não criam tabelas nem carregam fixtures. identity-init e condo-init executam explicitamente os bootstrap.py antes dos servidores; repetir a preparação não altera tabelas já existentes. O esquema legado não tem upgrade automático.
 
 ## 4. Visão de componentes
 
 - `web`: empacota React/Vite e Nginx e publica a porta local da interface.
 - `auth` e `users`: expõem login, introspecção e gestão de contas sobre `identity-db`.
-- `apartments`, `common-areas`, `agenda`, `visits` e `settings`: mantêm seus recursos sobre `condo-db`, com camadas e autorização por domínio.
+- `apartments`, `common-areas`, `agenda`, `visits` e `parameters`: mantêm seus recursos sobre `condo-db`, com camadas e autorização por domínio.
 - `agent`: fornece o ponto de integração para a prática, com prontidão operacional própria.
 
 ## 5. Contratos de interface
 
-A operação é exposta pelo Makefile, com `ENV=local|dev`. O Dockerfile usa estágios `development` e `production`; o entrypoint despacha `dev|runserver|prod|test` com `exec`. O modo dev usa `configs/compose.dev.yaml` com recarga automática. A preparação preserva `.env` existente, e `make down` preserva volumes. Não criar pasta `scripts` na raiz.
+A operação é exposta pelo Makefile, com `ENV=local|dev`. O Dockerfile usa estágios `development` e `production`; o entrypoint despacha `dev|runserver|prod|test|initialize` com `exec`. O modo dev usa `configs/compose.dev.yaml` com recarga automática. A preparação preserva `.env` existente, e `make down` preserva volumes. Não criar pasta `scripts` na raiz.
 
 Execute `make up` para gerar a configuração local, construir e iniciar os serviços. Use `docker compose config -q` para conferir o manifesto com essa configuração e abra `http://127.0.0.1:8767/`. `GET /api/health` passa pelo proxy até o health do toolkit na aplicação de apartamentos. A prontidão de cada dependência é inspecionável por `docker compose ps`. A porta acadêmica 8000 fica fora da composição base.
 
-Configuração obrigatória ausente ou banco inacessível impedem prontidão da dependência. O diagnóstico indica a falha sem imprimir credenciais. Uma indisponibilidade da fronteira do agente afeta a mensagem de chat e deixa os cadastros disponíveis.
+Configuração obrigatória ausente impede a partida do servidor. Banco inacessível impede a preparação inicial e retorna erro de dependência nas operações de negócio. O endpoint /health continua sendo liveness e não consulta o banco. O diagnóstico indica a falha sem imprimir credenciais. Uma indisponibilidade da fronteira do agente afeta a mensagem de chat e deixa os cadastros disponíveis.
 
 ## 6. Modelo de dados
 
@@ -51,18 +53,18 @@ Volumes distintos retêm contas, sessões de login, cadastros, revisões, reserv
 
 | Critério | Teste | Evidência esperada |
 | --- | --- | --- |
-| F01-AC01 | Base. Validar o manifesto, subir a composição de teste, conferir serviços saudáveis e abrir a origem publicada. | A composição inicia as onze unidades e carrega a tela de login. |
+| F01-AC01 | Base. Validar o manifesto, subir os dois jobs de preparação e a composição de teste, conferir os onze serviços contínuos saudáveis e abrir a origem publicada. | A composição inicia as onze unidades e carrega a tela de login. |
 | F01-AC02 | Base. Omitir a configuração em sandbox e comparar status do serviço e saída sanitizada. | O Compose recusa a configuração ou a autenticação fica sem prontidão. A falha identifica a variável sem divulgar segredo. |
 | F01-AC03 | Base. Criar uma conta e alterar um cadastro, reiniciar os serviços e consultar os dois pelas mesmas APIs. | A edição continua após reiniciar e a carga inicial não a sobrescreve. |
 | F01-AC04 | Executar testes da biblioteca e chamar API com identidade válida, inválida e erro de validação | Erros seguros, autenticação aplicada e correlação propagada sem dados sensíveis nos logs |
 | F01-AC05 | Importar uma vez, repetir e comparar cadastros e dados de origem em QA | Registros existentes conservados e novos cadastros criados apenas uma vez pelas APIs |
-| F01-AC06 | Gate AST por serviço e chamadas de health, Swagger e OpenAPI via gateway | Camadas respeitadas, documentação acessível e prontidão da dependência por serviço |
+| F01-AC06 | Gate AST por serviço e chamadas de health, Swagger e OpenAPI via gateway | Camadas respeitadas, documentação acessível e liveness independente de banco por serviço |
 | F01-SEC01 | Base. Consultar a superfície pública de desenvolvimento e confirmar que a rota interna não está exposta. | O proxy expõe caminhos públicos e privados esperados e mantém as rotas internas fechadas. |
 | NFR02-AC01 | Base. Comparar estado e resposta da operação em volume isolado. Induzir concorrência quando a funcionalidade tiver disputa de escrita. | Efeito confirmado permanece. A falha é observável e o domínio fica consistente. |
 | NFR04-AC01 | Base. Executar o procedimento aplicável a partir de uma instalação isolada e registrar componentes, saídas e condições não exercitadas. | As dependências do modo escolhido atingem prontidão e os verificadores registram a condição observada. |
 
 ### Dependência de infraestrutura HTTP
 
-O build instala microservice-toolkit por caminho relativo em packages/microservice-toolkit. A cópia da biblioteca no contexto Docker antecede uv sync. Criar as aplicações pelo factory configura logs, correlação e erros sem alterar os contratos de negócio. Os serviços users e condo configuram o verificador de identidade para suas rotas privadas.
+O build instala microservice-toolkit por caminho relativo em packages/microservice-toolkit. A cópia da biblioteca no contexto Docker antecede uv sync. Criar as aplicações pelo factory configura logs, correlação e erros sem alterar os contratos de negócio. Os serviços de negócio configuram o verificador de identidade do aurora-toolkit para suas rotas privadas.
 
 O teste de runtime continua exigindo composição de QA isolada na porta publicada pelo ambiente e aceita COMPOSE_PROJECT_NAME para selecionar o ambiente descartável. Os testes de integração ficam dentro de services/apartments/tests/integration.

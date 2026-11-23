@@ -9,13 +9,13 @@ prd_source: docs/prd/functional/F10-avaliacao.md
 
 ## 1. Visão técnica
 
-A avaliação futura inicia na porta local 8000, usando Python 3.12 ou superior, uv com lock versionado, uma versão exata da série 2 de Google ADK e credencial do provedor somente no ambiente. O modo usa os arquivos iniciais intactos. É separado do proxy autenticado do produto. A base executável não habilita essa entrada.
+A avaliação inicia na porta local 8000, usando Python 3.12 ou superior, uv com lock versionado, uma versão exata da série 2 de Google ADK e credencial do provedor somente no ambiente. O modo usa os arquivos iniciais intactos. É separado do proxy autenticado do produto. A entrada executável é `python -m services.agent.academic`; o proxy da base não publica essas rotas.
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F10](../../prd/functional/F10-avaliacao.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal opt-in de QA e API acadêmica. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
@@ -29,7 +29,7 @@ Reservar o contrato atual de produto com namespace /api e autenticação obrigat
 
 ## 4. Visão de componentes
 
-- Futuro entrypoint local de avaliação, separado do frontend e do proxy de produto.
+- Entrypoint local de avaliação, separado do frontend e do proxy de produto.
 - Adaptador de sessões, mensagens, eventos, decisões e projeções no formato do enunciado.
 - Roteiro de confirmação, persistência e concorrência para registro das provas.
 - Fixtures do desafio com auditoria de integridade do conteúdo.

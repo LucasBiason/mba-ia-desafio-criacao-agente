@@ -6,9 +6,9 @@ Requisitos não funcionais relacionados: NFR01, NFR02, NFR03
 
 ## Descrição
 
-A integração do assistente é a próxima etapa do desafio. Sessões persistidas e a fronteira de indisponibilidade existentes são preservadas, sem afirmar que a conversa com modelo ou tools está entregue.
+O portal de QA integra Google ADK/Gemini, múltiplos especialistas por sessão e tools com escopo de unidade. A base continua podendo operar sem chave. O aceite exige verificar as jornadas e a persistência no corte candidato.
 
-Entregar o contêiner do chat e os contratos de sessão da base. Orientar a implementação do agente, suas tools e confirmação pela API.
+Oferecer uma conversa contínua por unidade, histórico recuperável, consultas e ações de domínio com confirmação pela API.
 
 Como morador, quero abrir o chat em uma unidade vinculada. A integração com o domínio deve preservar o contexto da sessão.
 
@@ -18,7 +18,7 @@ A referência de produto original é FR09. A correspondência dos critérios ant
 
 - Depende de: F06, F07, F08.
 - Fornece: Sessão com usuário e unidade estáveis na base e fronteira de integração documentada para o agente principal e especialistas.
-- Integração: O frontend envia mensagens à API autenticada. A API encaminhará à fronteira privada do serviço de agente somente depois de autorizar usuário e unidade. O contexto de identidade vem do servidor, e o especialista usa portas de domínio para consultar e registrar efeitos. A visão acadêmica usa um adaptador isolado para o contexto inicial fornecido pelo avaliador.
+- Integração: O frontend envia mensagens à API autenticada. A API encaminha à fronteira privada do serviço de agente somente depois de autorizar usuário e unidade. O contexto de identidade vem do servidor, e o especialista usa portas de domínio para consultar e registrar efeitos. A visão acadêmica usa um adaptador isolado para o contexto inicial fornecido pelo avaliador.
 
 ## Comportamento esperado
 

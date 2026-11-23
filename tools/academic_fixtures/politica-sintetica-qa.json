@@ -1,0 +1,23 @@
+{
+  "version": "qa-v1",
+  "timezone": "America/Sao_Paulo",
+  "provenance": "SYNTHETIC QA ONLY; not official regulation",
+  "holidays": [],
+  "areas": [
+    {
+      "area": "salao-de-festas",
+      "fee_cents": 15000,
+      "blocked_weekdays": [
+        0
+      ],
+      "windows": [
+        {
+          "start": "08:00:00",
+          "end": "22:00:00"
+        }
+      ],
+      "cancel_business_days": 3,
+      "source_articles": []
+    }
+  ]
+}

@@ -13,105 +13,58 @@ Assistente virtual para reservar áreas comuns, cancelar reservas do próprio ap
 ![Google ADK série 2](https://img.shields.io/badge/Google_ADK-s%C3%A9rie_2-4285F4?style=flat-square&logo=google&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini-modelo-5268D6?style=flat-square&logo=googlegemini&logoColor=white)
 
-**Status:** base administrativa e portal implementados. A integração Google ADK/Gemini e o protocolo acadêmico estão pendentes.
+**Status:** o modo acadêmico tem API e agentes separados do produto. Os testes locais com o ADK e modelo simulado não substituem a validação com Gemini. O portal administrativo é um complemento de portfólio e não é necessário para o avaliador.
 
 ## Arquitetura
 
-A proposta inclui frontend, backend do condomínio e serviços de autenticação, usuários e agente, com Docker Compose para o ambiente local. O produto usa JWT e permissões por papel e apartamento. O modo local do avaliador mantém o contrato oficial na porta 8000. Um agente principal encaminha as solicitações para especialistas de reservas, visitantes e regulamento. As tools usam o apartamento vinculado à sessão para consultar dados e executar operações.
+Na avaliação, FastAPI recebe a mensagem, recupera o apartamento fixo da sessão e passa o turno ao Runner do Google ADK. O **principal** encaminha a conversa por transferência nativa do ADK, na mesma sessão persistida. **Reservas** consulta disponibilidade e reservas próprias, cria reservas e cancela reservas próprias. **Convivência** lê e autoriza visitas e consulta um artigo do regulamento. A divisão mantém ferramentas de agenda separadas das de convivência; o servidor, não o modelo, define a unidade de todas as tools.
+
+```text
+Cliente → API acadêmica → Runner ADK → principal → especialista → tool → SQLite
+                        ↘ histórico ADK               ↳ pedido de confirmação
+Cliente → POST /sessoes/{session_id}/confirmacoes → retoma a execução do especialista
+```
+
+O modo acadêmico usa dois arquivos SQLite locais: registros do domínio/pendências e sessões/eventos do ADK. Não depende do Docker, PostgreSQL ou credenciais do portal. A interface administrativa usa composição, autenticação e dados próprios.
 
 ## Garantias
 
-A implementação será avaliada por cinco comportamentos.
+| Garantia | Implementação acadêmica |
+| --- | --- |
+| **1. Aprovação fora do chat** | [tools de reserva e visita](services/agent/academic/runtime.py#L20-L95) chamam `request_confirmation` do ADK. A API [registra a pendência](services/agent/academic/api.py#L235-L301) e [retoma a invocação original](services/agent/academic/api.py#L555-L666) só após a decisão na rota. Negar não grava; repetir recebe 409. |
+| **2. Apartamento fixo** | A [criação da sessão](services/agent/academic/api.py#L503-L517) grava o vínculo e [a API resolve a unidade](services/agent/academic/api.py#L100-L107) no servidor. As [tools vinculadas](services/agent/academic/domain.py#L391-L407) não aceitam apartamento escolhido pelo modelo. A consulta de disponibilidade não identifica quem reservou. |
+| **3. Persistência** | [DatabaseSessionService](services/agent/academic/api.py#L44-L64) mantém sessões e eventos, e a [rota de eventos](services/agent/academic/api.py#L669-L678) lê os eventos armazenados. O [schema de sessões e confirmações](services/agent/academic/api.py#L30-L41) persiste vínculos e pendências; o [schema de domínio](services/agent/academic/domain.py#L14-L33) mantém efeitos e recibos. Reiniciar com o mesmo diretório conserva os dois bancos. |
+| **4. Regulamento sob demanda** | A [tool de convivência](services/agent/academic/runtime.py#L97-L103) chama o [seletor de trechos](services/parameters/queries/regulation_excerpt.py) e usa apenas o artigo pertinente. O texto inteiro não entra no prompt principal nem na ferramenta. Pesquisa ambígua não injeta trecho de outro assunto. |
+| **5. Uma reserva ativa por área e dia** | O [índice único parcial](services/agent/academic/domain.py#L14-L33) impede duplicação no armazenamento, e a [inserção](services/agent/academic/domain.py#L228-L243) resolve o conflito como indisponibilidade. O [efeito e recibo](services/agent/academic/domain.py#L195-L225) são tratados na mesma transação; cancelar não libera o código histórico. |
 
-1. Reservas pagas e autorizações de visitantes só produzem efeito após aprovação pela rota de confirmações.
-2. Cada sessão acessa os dados do apartamento associado na criação.
-3. Conversas, eventos e alterações persistem após reiniciar a API.
-4. A consulta ao regulamento traz ao contexto apenas trechos pertinentes.
-5. A exclusividade por área e data é garantida na gravação, inclusive sob concorrência.
+A API acadêmica é local e não autenticada por definição do desafio. Não exponha a porta 8000 na rede. Use um processo por diretório SQLite; a composição com PostgreSQL coordena réplicas no banco. Após uma confirmação interrompida, um novo turno reconcilia o resultado pelo recibo durável ou encerra a tentativa sem executar de novo. Vínculo ou recibo inconsistentes mantém a sessão bloqueada. O reenvio do mesmo ID não repete a ação. Se o evento da proposta foi salvo, mas ela não entrou no índice de pendências, a aprovação explícita pode recuperá-la dos 100 eventos mais recentes da mesma sessão. A API não executa nada só por recuperar a proposta.
 
-## Abrir o portal
+## Como rodar
 
-Com Docker Compose, Make, Python 3 e a partir da raiz do projeto:
-
-```sh
-make up
-```
-
-Abra [o portal local](http://127.0.0.1:8767/). A primeira execução grava senhas de demonstração geradas no arquivo local `.env`. A instalação usa o mesmo arquivo nas próximas execuções.
-
-| Perfil | E-mail | Senha no arquivo local |
-| --- | --- | --- |
-| Administração auxiliar | `super@aurora.test` | `DEMO_SUPER_PASSWORD` |
-| Administração | `admin@aurora.test` | `DEMO_ADMIN_PASSWORD` |
-| Moradora responsável pela unidade 101 | `morador@aurora.test` | `DEMO_RESIDENT_PASSWORD` |
-
-Para consultar os contêineres, use `make ps`. Para parar a instância mantendo os registros, use `make stop`. Use `AURORA_PORT=8780 make up` se quiser outra porta local.
-
-
-Para desenvolvimento com recarga automática, use `make up ENV=dev`. O Compose base usa o estágio `production` do Dockerfile; o override em `configs/compose.dev.yaml` seleciona `development`, monta o código e usa o comando `dev` do entrypoint. Use o mesmo `ENV` nos comandos seguintes. `make help` lista as operações. `make down` preserva os volumes. Os comandos de teste requerem uv instalado.
-
-A entrega atual é a base administrativa manual. Criar/cancelar reservas e autorizar visitantes pelo agente, confirmações e modo acadêmico são a próxima etapa do desafio. O [PRD](docs/prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) delimita os critérios atuais e posteriores.
-
-## Documentação
-
-- [Enunciado oficial](docs/enunciado.md)
-- [Contrato da API](docs/enunciado.md#contrato-da-api)
-- [Fluxo do avaliador](docs/enunciado.md#fluxo-do-avaliador)
-- [PRD](docs/prd/index.md)
-- [Dados iniciais do condomínio](dados/)
-
-## Fluxos do portal
-
-- A administração cadastra usuários dos tipos Administração e Morador, além de apartamentos e áreas.
-- Em **Agenda**, use o mês atual para ver todas as áreas ou filtre por uma delas. Clique no dia para abrir suas reservas, ou busque pelo código para ir direto à área e à data. A administração pode registrar os horários da reserva. O morador consulta os registros da sua unidade.
-- Em **Visitas**, a administração pode registrar os horários de entrada e saída.
-- A edição do regulamento cria uma nova versão com autor e horário. O histórico mantém a versão anterior. Uma edição iniciada numa versão ultrapassada recebe conflito.
-- O morador seleciona a unidade e cria uma sessão persistente em **Assistente**. As mensagens nesse fluxo exibem a pendência da integração do agente.
-
-Os cinco arquivos de dados iniciais ficam em `dados/`. Identidade e condomínio leem a fonte na inicialização. Cada apartamento tem código interno e número. Seu responsável é um único usuário do tipo Morador, que representa também o proprietário neste exercício. Os nomes de `apartamentos.json` alimentam esses usuários e a relação com as unidades. As demais contas importadas começam desativadas e podem ser habilitadas pela administração com uma senha definida no painel. Horários ausentes nos arquivos ficam como **Não informado** até serem preenchidos.
-
-## Especificações e arquitetura
-
-- [PRD do produto](docs/prd/index.md)
-- [Specs e planos por feature](docs/specs/index.md)
-- [Arquitetura e contratos entre serviços](docs/design/architecture.md)
-- [Contexto e aplicações C4](docs/design/c4-context.md)
-- [Modelo conceitual](docs/design/data-model.md)
-- [ADRs](docs/adr/README.md)
-
-## Reexecutar os testes da base
-
-Na instância local do playground, use `make seed-agenda` para preencher vários meses do calendário com reservas sintéticas. Cada uma aparece com a indicação **Teste**. Use `make unseed-agenda` para retirar a massa gerada e voltar aos registros anteriores.
-
-Os testes que alteram dados usam por padrão a porta 8768, separada da porta de uso 8767. Para outra composição de teste, informe `AURORA_URL` ou `AURORA_TEST_PORT`. Use sempre um projeto Compose separado para deixar os dados de exercício fora da instância de uso:
+Pré-requisitos: Python 3.12+, `uv` e uma chave do **Google AI Studio**. O Google ADK é fixado em `2.9.1` no projeto. Use os cinco arquivos originais de `dados/`; o aplicativo não os altera.
 
 ```sh
-COMPOSE_PROJECT_NAME=residencial-aurora-qa AURORA_PORT=8768 make up
-COMPOSE_PROJECT_NAME=residencial-aurora-qa AURORA_PORT=8768 make test
-COMPOSE_PROJECT_NAME=residencial-aurora-qa AURORA_PORT=8768 make test-runtime
-COMPOSE_PROJECT_NAME=residencial-aurora-qa make down
+cp -n .env.example .env
+# Preencha GOOGLE_API_KEY no arquivo .env local; nunca versione a chave.
+uv sync --locked
+uv run --locked python -m services.agent.academic init
+uv run --locked --env-file .env python -m services.agent.academic serve
 ```
 
-Use `make test-unit` para os testes da validação de identidade da aplicação. Os testes próprios do toolkit pertencem ao projeto original da biblioteca e não acompanham a cópia em packages/. A regressão móvel fica em `make test-ui`, com Playwright Python/Chromium instalados e as variáveis `AURORA_URL` e `AURORA_TEST_ADMIN_PASSWORD` fornecidas por um ambiente sintético de teste; `AURORA_TEST_ADMIN_EMAIL` é opcional. O teste não lê nem imprime a configuração pessoal.
+Acesse [`localhost:8000/docs`](http://localhost:8000/docs). `AURORA_MODEL` é opcional (padrão: `gemini-3.5-flash-lite`). Se o Google AI Studio não disponibilizar esse modelo ao projeto da sua chave, configure em `AURORA_MODEL` um modelo Gemini habilitado no projeto. O transporte usa o Google AI Studio, não Vertex AI. As seis rotas e os formatos estão no [enunciado](docs/enunciado.md#contrato-da-api).
 
-Os testes verificam a API servida pelo proxy do portal. O modo de avaliação do desafio e a chamada ao modelo pertencem ao escopo de integração do agente.
+**Restaurar sem apagar a sessão anterior:** pare a instância local, escolha um diretório acadêmico novo e inicie usando o mesmo diretório nos dois comandos. Essa instância contém novamente os dados das fixtures e não tem o histórico da instância anterior.
 
-## Biblioteca dos serviços
+```sh
+uv run --locked python -m services.agent.academic restore --data-dir .aurora-academic-restaurado
+uv run --locked --env-file .env python -m services.agent.academic serve --data-dir .aurora-academic-restaurado
+```
 
-Os serviços usam microservice-toolkit para criar aplicações FastAPI, padronizar erros, propagar X-Request-ID e registrar logs JSON. O pacote fica em packages/microservice-toolkit para que um clone do fork possa construir as imagens sem depender de outro checkout. O serviço de identidade mantém o adaptador específico das APIs do Aurora em services/authentication/client.py.
+Para testar depois de um reinício, não rode `restore`: volte com `serve` e o diretório anterior. Veja o [tutorial de demonstração](docs/design/aurora-roteiro-do-avaliador.md) para acompanhar uma ação do chat à transação. A bateria local com modelo simulado usa bancos descartáveis:
 
-Os testes de integração do domínio ficam em services/apartments/tests/integration/. A biblioteca independente tem seus próprios testes no projeto microservice-toolkit.
+```sh
+PYTHONPATH="$PWD:$PWD/services/agent/tests" uv run --locked python -m unittest discover -s services/agent/tests
+```
 
-## Importação administrativa
 
-Execute python3 dados/importar_cadastros.py --url http://127.0.0.1:8767 para importar cadastros ausentes de usuários moradores, apartamentos e áreas pelas APIs. A senha administrativa é solicitada no terminal. Registros existentes são conservados. O comando pode ser reexecutado após falha parcial.
-
-Os registros iniciais de reservas, autorizações e regulamento continuam carregados pela inicialização do domínio, preservando as fixtures do desafio. Os endpoints de criação por agente permanecem pendentes.
-
-## Serviços e camadas
-
-As aplicações FastAPI ficam em services/authentication, users, apartments, common_areas, agenda, visits, settings e agent. Cada aplicação tem composição em main.py e camadas de routers, controllers, validators, repositories ORM, models, schemas e serializers. O toolkit registra /health e configura Swagger e OpenAPI.
-
-Cada serviço tem documentação em /services/NOME/docs no portal. Os nomes são auth, users, apartments, common-areas, agenda, visits, settings e agent. Os testes integrados ficam em services/apartments/tests/integration.
-
-Os serviços de negócio usam inicialmente o banco PostgreSQL de condomínio existente para preservar os dados e constraints. A separação física dos bancos por serviço exige uma migração adicional.
+O [portal autenticado e administrativo](docs/design/portal-bonus.md) é um bônus de portfólio. Frontend, autenticação, pagamento real e deploy não são requisitos da API acadêmica. Para conferir o aceite oficial, siga o [enunciado e os 15 passos](docs/enunciado.md#fluxo-do-avaliador).

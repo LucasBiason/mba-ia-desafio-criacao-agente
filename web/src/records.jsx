@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HoursEditor, hourLabel, reservationHours, visitHours } from "./hours";
-import { Button, Feedback, PageHeading, QueryResult, Table, Tag, money, shortDate } from "./ui";
+import { Button, Feedback, LinkButton, PageHeading, QueryResult, Table, Tag, money, shortDate } from "./ui";
 
 const reservationColumns = [
   { title: "Código", render: item => <strong>{item.code}</strong> },
@@ -21,19 +21,46 @@ const visitColumns = [
   { title: "Situação", render: () => <Tag tone="positive">Autorizada</Tag> },
 ];
 
+function ReservationDetails({ item, close }) {
+  const dialog = useRef(null);
+  useEffect(() => {
+    const element = dialog.current;
+    if (!element.open) element.showModal();
+    return () => { if (element.open) element.close(); };
+  }, []);
+  return <dialog className="panel reservation-details" ref={dialog} aria-labelledby="reservation-details-title"
+    onCancel={event => { event.preventDefault(); close(); }} onClick={event => {
+      if (event.target === event.currentTarget) close();
+    }}>
+    <div className="stack" onClick={event => event.stopPropagation()}>
+      <h2 id="reservation-details-title">Detalhes da reserva</h2>
+      <dl>{reservationColumns.map(column => <div key={column.title}>
+        <dt>{column.title}</dt><dd>{column.render(item)}</dd>
+      </div>)}</dl>
+      <div className="actions"><Button variant="secondary" onClick={close}>Fechar detalhes</Button></div>
+    </div>
+  </dialog>;
+}
+
 export function Records({ query, kind, resident, saveHours }) {
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
   const [area, setArea] = useState("");
   const [editing, setEditing] = useState(null);
   const [notice, setNotice] = useState("");
+  const [details, setDetails] = useState(null);
+  const openDetails = resident && kind === "reservations";
   const reservation = kind === "reservations";
-  const title = reservation ? (resident ? "Minhas reservas" : "Agenda") : "Autorizações de visita";
+  const title = reservation ? (resident ? "Minhas reservas" : "Agenda") : resident ? "Histórico de visitas" : "Autorizações de visita";
   const columns = reservation ? reservationColumns : visitColumns;
   const editableColumns = saveHours ? [...columns, {
     title: "Ações",
     render: item => <Button size="small" variant="secondary" aria-label={"Editar horários da visita de " + item.name}
       onClick={() => { setNotice(""); setEditing(item); }}>Editar horários</Button>,
+  }] : openDetails ? [...columns, {
+    title: "Detalhes",
+    render: item => <Button size="small" variant="secondary" aria-label={"Ver detalhes da reserva " + item.code}
+      onClick={event => { event.stopPropagation(); setDetails(item); }}>Ver detalhes</Button>,
   }] : columns;
 
   async function updateHours(body) {
@@ -45,10 +72,15 @@ export function Records({ query, kind, resident, saveHours }) {
 
   return <>
     <PageHeading title={title} section={resident ? "Área do morador" : "Administração"}>
-      {reservation ? "Consulte os horários registrados nas áreas comuns." : "Consulte as autorizações registradas por apartamento e data."}
+      {openDetails ? "Abra uma reserva para conferir área, status, taxa e horários."
+        : reservation ? "Consulte os horários registrados nas áreas comuns."
+        : resident ? "Consulte as autorizações e os horários de entrada e saída registrados para seu apartamento. Esta tela não autoriza novas visitas."
+        : "Consulte as autorizações registradas por apartamento e data."}
     </PageHeading>
     <div className="stack">
       <Feedback message={notice} variant="success" />
+      {resident && !reservation && <div className="actions"><LinkButton route="/assistente" secondary>Autorizar visita pelo Assistente</LinkButton></div>}
+      {details && <ReservationDetails item={details} close={() => setDetails(null)} />}
       {editing && <HoursEditor key={editing.id} title={"Horários da visita de " + editing.name} row={editing}
         fields={visitHours} allowOpenEnd onSave={updateHours} onCancel={() => setEditing(null)} />}
       <QueryResult query={query}>{data => {
@@ -72,7 +104,7 @@ export function Records({ query, kind, resident, saveHours }) {
             </select></label>}
           </div>
           <p className="result-count" aria-live="polite">{rows.length} {rows.length === 1 ? "registro" : "registros"}</p>
-          <Table label={title} columns={editableColumns} rows={rows} getKey={item => item.code ?? item.id} />
+          <Table label={title} columns={editableColumns} rows={rows} getKey={item => item.code ?? item.id} onRowClick={openDetails ? setDetails : undefined} />
         </section>;
       }}</QueryResult>
     </div>

@@ -4,7 +4,16 @@ import unittest
 
 import test_api as api
 
-SERVICES = ("auth", "users", "apartments", "common-areas", "agenda", "visits", "settings", "agent")
+SERVICES = (
+    "auth",
+    "users",
+    "apartments",
+    "common-areas",
+    "agenda",
+    "visits",
+    "parameters",
+    "agent",
+)
 
 
 class OpenApiContractTest(unittest.TestCase):
@@ -28,16 +37,25 @@ class OpenApiContractTest(unittest.TestCase):
                         self.assertTrue(operation.get("summary"))
                         self.assertTrue(operation.get("tags"))
                         if path.startswith(("/api/admin", "/api/resident")):
-                            self.assertEqual(operation["security"], [{"BearerAuth": []}])
+                            self.assertEqual(
+                                operation["security"], [{"BearerAuth": []}]
+                            )
 
     def test_swagger_urls_preserve_identity_and_permissions(self):
         api.AuroraBaseTest.setUpClass()
-        for service, path in (("apartments", "/api/admin/apartments"), ("users", "/api/admin/users")):
+        for service, path in (
+            ("apartments", "/api/admin/apartments"),
+            ("users", "/api/admin/users"),
+        ):
             with self.subTest(service=service):
                 route = "/services/" + service + path
                 self.assertEqual(api.call(route)[0], 401)
-                self.assertEqual(api.call(route, token=api.AuroraBaseTest.resident)[0], 403)
-                self.assertEqual(api.call(route, token=api.AuroraBaseTest.admin)[0], 200)
+                self.assertEqual(
+                    api.call(route, token=api.AuroraBaseTest.resident)[0], 403
+                )
+                self.assertEqual(
+                    api.call(route, token=api.AuroraBaseTest.admin)[0], 200
+                )
 
 
 if __name__ == "__main__":

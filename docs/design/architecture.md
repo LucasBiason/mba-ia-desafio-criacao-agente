@@ -12,7 +12,7 @@ Organizar as APIs em serviços com responsabilidade explícita e camadas verific
 
 As visões [C1 e C2](c4-context.md) distinguem o limite do sistema das aplicações executáveis. O [modelo conceitual](data-model.md) detalha identidades, cardinalidades e histórico. O blueprint do agente e uma eventual fila não integram a topologia decidida desta etapa.
 
-O portal React é servido pelo Nginx, que encaminha cada recurso ao serviço proprietário. Há oito aplicações FastAPI independentes, dois bancos PostgreSQL e o frontend. O toolkit configura infraestrutura HTTP, enquanto cada aplicação define seu domínio.
+O portal React é servido pelo Nginx, que encaminha cada recurso ao serviço proprietário. Há oito aplicações FastAPI independentes, dois bancos PostgreSQL, o frontend e dois jobs explícitos de preparação. O toolkit configura infraestrutura HTTP, enquanto cada aplicação define seu domínio.
 
 As aplicações e os armazenamentos estão na visão [C2](c4-context.md#c2-aplicações-e-persistência).
 
@@ -28,10 +28,10 @@ Os serviços de condomínio compartilham inicialmente o banco existente para pre
 | common_areas | Áreas comuns e taxas | services/common_areas |
 | agenda | Agenda, consultas de reservas e horários | services/agenda |
 | visits | Autorizações existentes e horários de visita | services/visits |
-| settings | Regulamento vigente e versões imutáveis | services/settings |
+| parameters | Regulamento vigente e versões imutáveis | services/parameters |
 | agent | Sessões do morador e fronteira da consultoria | services/agent |
 
-Cada diretório contém main, routers, controllers, validators, repositories, models, schemas e serializers. main apenas compõe a aplicação. services/persistence fornece a base ORM e o repositório de migração. O pacote microservice-toolkit fornece o ciclo transacional, o factory HTTP, logs, autenticação configurável e erros.
+Cada diretório contém main, routers, controllers, validators, repositories, models, schemas e serializers. main apenas compõe a aplicação. A infraestrutura ORM (Base, Database e Repository) pertence ao microservice-toolkit. O aurora-toolkit contém tipos, permissões e cliente de identidade do cluster. A criação inicial das tabelas e fixtures fica nos bootstrap.py dos componentes, coordenados por services/initialize.py antes dos servidores HTTP. O pacote microservice-toolkit fornece o ciclo transacional, o factory HTTP, logs, autenticação configurável e erros.
 
 ## 4. Fluxos de requisições e dados
 
@@ -96,11 +96,11 @@ O regulamento tem versão zero importada e versões posteriores com conteúdo, a
 
 As rotas públicas do portal conservam os caminhos de F01–F14. Nginx encaminha usuários, apartamentos, áreas, reservas, visitas, configurações e chat aos respectivos serviços. A introspecção e a consulta interna de usuários exigem credencial de serviço e permanecem fora do proxy público.
 
-Cada aplicação expõe /health pelo toolkit e /docs e /openapi.json por FastAPI. A prontidão consulta o banco pelo HealthRepository. As páginas Swagger ficam acessíveis em /services/auth/docs, /services/users/docs, /services/apartments/docs, /services/common-areas/docs, /services/agenda/docs, /services/visits/docs, /services/settings/docs e /services/agent/docs.
+Cada aplicação expõe /health pelo toolkit e /docs e /openapi.json por FastAPI. O /health verifica somente a atividade da aplicação, sem consultar o banco. A checagem do PostgreSQL pertence ao container de banco; a preparação de schema e dados pertence aos jobs explícitos. As páginas Swagger ficam acessíveis em /services/auth/docs, /services/users/docs, /services/apartments/docs, /services/common-areas/docs, /services/agenda/docs, /services/visits/docs, /services/parameters/docs e /services/agent/docs.
 
 ## 7. Escala e disponibilidade
 
-A execução alvo é Docker Compose local. Não há meta aprovada de carga ou disponibilidade de produção. A consulta de identidade é síncrona e sua falha bloqueia APIs privadas. Repositories têm sessões por operação, rollback e fechamento garantidos. Readiness cria uma sessão nova por verificação.
+A execução alvo é Docker Compose local. Não há meta aprovada de carga ou disponibilidade de produção. A consulta de identidade é síncrona e sua falha bloqueia APIs privadas. Repositories têm sessões por operação, rollback e fechamento garantidos. Liveness não cria sessões de banco. Uma eventual readiness específica usa /ready, por opção explícita do consumidor; os serviços Aurora não a configuram nesta etapa.
 
 ## 8. Segurança e privacidade
 
@@ -110,11 +110,14 @@ Logs registram serviço, método, template de rota, status, duração e correla�
 
 ## 9. Observabilidade e operação
 
-O Makefile oferece setup, config, build, up, stop, down, ps, logs e testes. make up prepara configuração local e sobe a composição. O Dockerfile tem estágios development e production, com entrypoint único que despacha dev/runserver, prod e test usando exec. O override configs/compose.dev.yaml habilita recarga automática e montagem de código; a composição base mantém a imagem imutável. A preparação idempotente fica em configs/setup_local.py e a massa sintética em dados/seed_agenda.py. Não existe pasta scripts na raiz. Cada serviço publica Swagger, OpenAPI e health. O toolkit propaga X-Request-ID nas chamadas entre serviços. A subida normal preserva os volumes e as migrações são transacionais.
+O Makefile oferece setup, config, build, up, initialize, stop, down, ps, logs e testes. make up prepara configuração local e sobe a composição. O Dockerfile tem estágios development e production, com entrypoint único que despacha dev/runserver, prod, test e initialize usando exec. O override configs/compose.dev.yaml habilita recarga automática e montagem de código; a composição base mantém a imagem imutável. A preparação idempotente fica em configs/setup_local.py e a massa sintética em tools/seed_agenda.py. Não existe pasta scripts na raiz. Cada serviço publica Swagger, OpenAPI e liveness. O lifespan do framework valida os nomes configurados em REQUIRED_SECRETS, sem código repetido nos main.py. O toolkit propaga X-Request-ID nas chamadas entre serviços. A subida normal preserva os volumes; a preparação de cada componente usa uma transação.
 
-O SchemaRepository usa ORM nas cargas e transformações de dados. DDL fica restrito a criação e alteração de esquema. O importador em dados/importar_cadastros.py usa APIs administrativas para cadastros ausentes. A geração removível de reservas de teste usa um repository ORM próprio da agenda.
+Os preparadores explícitos usam ORM para criar o esquema atual e carregar as fixtures apenas quando a tabela primária ainda não existe. Não há upgrade de schema legado, ALTER TABLE, backfill ou repository de health. Tabelas existentes são preservadas e não recebem recarga automática. O importador em tools/importar_cadastros.py usa APIs administrativas para cadastros ausentes. A geração removível de reservas de teste usa um repository ORM próprio da agenda.
 
 ## 10. Decisões, riscos e validação
+
+A separação entre framework genérico, convenções Aurora e preparação de dados segue o [ADR-0007](../adr/ADR-0007-framework-e-ciclo-de-vida.md). Os diretórios de services representam exclusivamente as oito aplicações de negócio.
+
 
 | Decisão | Origem | Estado | ADR |
 | --- | --- | --- | --- |
@@ -124,19 +127,20 @@ O SchemaRepository usa ORM nas cargas e transformações de dados. DDL fica rest
 | Toolkit e operação reproduzível | F01 e padrão operacional do produto | accepted | [ADR-0004](../adr/ADR-0004-toolkit-e-operacao-dos-servicos.md) |
 | Regulamento único e versões imutáveis | F06 | accepted | [ADR-0005](../adr/ADR-0005-regulamento-unico-versionado.md) |
 | Dois bancos nesta etapa | Topologia observada; confirmação específica pendente | proposed | [ADR-0006](../adr/ADR-0006-persistencia-compartilhada-da-base.md) |
+| Framework e convenções do cluster separados | Organização de infraestrutura requerida em F01 | accepted | [ADR-0007](../adr/ADR-0007-framework-e-ciclo-de-vida.md) |
 
 | Risco ou pendência | Impacto | Mitigação ou próxima decisão | Fonte |
 | --- | --- | --- | --- |
 | Banco de condomínio compartilhado | Acopla migrações e disponibilidade dos serviços | Preservar domínio dos repositories; decidir separação física antes de uma migração própria | ADR-0006 |
-| Introspecção central indisponível | APIs privadas deixam de operar | Falhar fechado, readiness e erro de dependência sem mutação | F03 |
+| Introspecção central indisponível | APIs privadas deixam de operar | Falhar fechado e retornar erro de dependência sem mutação | F03 |
 | Leituras e edições concorrentes | Podem gerar duplicidade ou perda de alteração | Constraints, locks e versão na transação, com recusa explícita | F02/F04/F05/F06 |
 | Agente ainda sem integração | Não cria reservas/autorizações nem confirma ações | Blueprint e implementação posterior; preservar casos futuros como pendentes | F07–F10 |
 | Processamento assíncrono sugerido | Acrescenta confirmação, idempotência e retomada a definir | Discutir no blueprint; fila não substitui exclusividade no armazenamento | Enunciado, garantia 5 |
 
-### Verificações realizadas
+### Fontes e critérios de validação
 
-As fontes são os modelos, repositories, composição, rotas, specs e PRD versionados. O PRD e os quatorze pacotes de specs têm verificação estrutural estrita. Os links locais e os estados dos seis ADRs foram conferidos. As cinco figuras Mermaid foram renderizadas localmente; capturas, resultados de testes e avaliação permanecem externamente ao repositório. A documentação não concede aceite humano nem afirma que as integrações futuras estão implementadas.
+As fontes são os modelos, repositories, composição, rotas, specs e PRD versionados. O PRD e os quatorze pacotes de specs recebem validação estrutural estrita. A verificação de execução abrange permissões, inicialização repetida, liveness independente do banco e persistência após reinício. Provas e resultados de avaliação permanecem externos ao repositório; o aceite humano e as integrações futuras seguem seus próprios critérios.
 
-### Handoff para especificação
+### Rastreabilidade com as especificações
 
 F01–F06 e F11–F14 usam os ADRs da base; F07/F08 distinguem consultas e horários das mutações futuras pelo agente. F09 preserva sessões e fronteira de indisponibilidade. F10 mantém o contrato acadêmico para etapa posterior. O blueprint futuro deve mapear agente principal, especialistas, tools, sessão, confirmação e exclusividade conforme o enunciado, antes de escolher mecanismo de fila, se aplicável.

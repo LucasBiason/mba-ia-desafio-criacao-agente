@@ -1,6 +1,7 @@
 from sqlalchemy import Column, DateTime, ForeignKey, Text
 
-from services.persistence.base import Base
+from microservice_toolkit import Base
+
 
 class LoginSession(Base):
     __tablename__ = "sessions"

@@ -42,5 +42,14 @@
 - Tipo: comportamento.
 - Depende de: SI01.4 e contratos de cadastros existentes.
 - Ações: separar os domínios em processos, adotar repositories SQLAlchemy, validators e serializers e centralizar health e documentação no toolkit.
-- Testes: executar o gate de camadas, conferir Swagger e OpenAPI dos serviços, repetir os contratos HTTP e comparar os dados após migrar e reiniciar.
+- Testes: executar o gate de camadas, conferir Swagger e OpenAPI dos serviços, repetir os contratos HTTP e comparar os dados após preparar e reiniciar.
 - Critérios: F01-AC06, F01-AC03, F01-AC04.
+
+
+### SI01.6 — Consolidar o framework e separar a preparação dos dados
+
+- Tipo: infraestrutura.
+- Depende de: SI01.5 e ADR-0007.
+- Ações: organizar o toolkit nos módulos da referência Shared; mover identidade, permissões e tipos Aurora ao aurora-toolkit; deixar somente domínios em services; renomear settings para parameters; usar REQUIRED_SECRETS no lifespan do framework e bootstrap explícito por componente, sem upgrade legado.
+- Testes: executar a suíte do toolkit, os contratos HTTP/OpenAPI e a preparação repetida em volumes descartáveis; interromper apenas o banco do piloto, confirmar health 200 e operação de negócio 503, restaurar e comparar estado; verificar admin autorizado, morador 403 e chamada anônima 401 em apartments.
+- Critérios: F01-AC02, F01-AC03, F01-AC04, F01-AC06, F01-SEC01.

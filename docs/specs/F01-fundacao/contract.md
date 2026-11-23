@@ -6,7 +6,7 @@ Prepare uma composição isolada e uma massa de dados de demonstração. No cen�
 
 ## Itens
 
-- **E2E-F01-01** (P0D, cobre F01-AC01) — Um clone com Docker e o cliente Compose e os dados iniciais. Validar o manifesto, subir a composição de teste, conferir serviços saudáveis e abrir a origem publicada -> A composição inicia as onze unidades e carrega a tela de login. Modo: Base.
+- **E2E-F01-01** (P0D, cobre F01-AC01) — Um clone com Docker e o cliente Compose e os dados iniciais. Validar o manifesto, subir os dois jobs de preparação e a composição de teste, conferir os onze serviços contínuos saudáveis e abrir a origem publicada -> A composição inicia as onze unidades e carrega a tela de login. Modo: Base.
 - **E2E-F01-02** (P0D, cobre F01-AC02) — Uma configuração obrigatória de autenticação ausente numa composição descartável. Omitir a configuração em sandbox e comparar status do serviço e saída sanitizada -> O Compose recusa a configuração ou a autenticação fica sem prontidão. A falha identifica a variável sem divulgar segredo. Modo: Base.
 - **E2E-F01-03** (P0D, cobre F01-AC03) — Uma edição persistida em volume existente. Criar uma conta e alterar um cadastro, reiniciar os serviços e consultar os dois pelas mesmas APIs -> A edição continua após reiniciar e a carga inicial não a sobrescreve. Modo: Base.
 - **E2E-F01-04** (P0D, cobre F01-SEC01) — Um cliente na origem publicada. Consultar a superfície pública de desenvolvimento e confirmar que a rota interna não está exposta -> O proxy expõe caminhos públicos e privados esperados e mantém as rotas internas fechadas. Modo: Base.
@@ -16,7 +16,7 @@ Prepare uma composição isolada e uma massa de dados de demonstração. No cen�
 - **E2E-F01-07** (P0D, cobre F01-AC04) — Configurar aplicações com a biblioteca e enviar chamadas válidas, sem identidade e com dados inválidos -> Correlação presente, erro sanitizado e logs sem credenciais ou payloads. Modo: testes HTTP da biblioteca e API real em QA.
 - **E2E-F01-08** (P0D, cobre F01-AC05) — Executar importador com cadastros ausentes e repetir a execução -> Cadastros criados por API, repetição sem duplicações e JSONs originais intactos. Modo: API real em QA.
 
-- **E2E-F01-09** (P0D, cobre F01-AC06) — Construir os oito serviços, executar o gate de camadas e consultar health, Swagger e OpenAPI -> Cada domínio tem camadas e modelos ORM próprios, health fornecido pelo toolkit e contratos documentados. Modo: AST e HTTP em QA.
+- **E2E-F01-09** (P0D, cobre F01-AC06) — Construir os oito serviços, executar o gate de camadas e consultar health, Swagger e OpenAPI -> Cada domínio tem camadas e modelos ORM próprios, health de liveness fornecido pelo toolkit sem consultar banco e contratos documentados. Modo: AST e HTTP em QA.
 
 ## Cobertura
 

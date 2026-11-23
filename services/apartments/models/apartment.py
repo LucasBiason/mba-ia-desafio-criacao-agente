@@ -1,6 +1,7 @@
 from sqlalchemy import BigInteger, CheckConstraint, Column, Identity, Text
 
-from services.persistence.base import Base
+from microservice_toolkit import Base
+
 
 class Apartment(Base):
     __tablename__ = "apartments"

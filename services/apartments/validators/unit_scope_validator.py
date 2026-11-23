@@ -1,6 +1,6 @@
 from microservice_toolkit import error
 
-from services.permissions import require_resident
+from aurora_toolkit.permissions import require_resident
 
 
 class UnitScopeValidator:
@@ -10,4 +10,8 @@ class UnitScopeValidator:
     def validate(self, number, actor, *, lock=False):
         require_resident(actor)
         if not self.repository.owns_unit(number, actor["id"], lock=lock):
-            raise error(403, "APARTMENT_FORBIDDEN", "O apartamento não está vinculado à sua conta.")
+            raise error(
+                403,
+                "APARTMENT_FORBIDDEN",
+                "O apartamento não está vinculado à sua conta.",
+            )

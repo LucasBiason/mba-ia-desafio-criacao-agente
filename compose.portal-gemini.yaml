@@ -1,0 +1,44 @@
+services:
+  identity-init:
+    image: aurora-portal-gemini-api:local
+  condo-init:
+    image: aurora-portal-gemini-api:local
+  auth:
+    image: aurora-portal-gemini-api:local
+  users:
+    image: aurora-portal-gemini-api:local
+  apartments:
+    image: aurora-portal-gemini-api:local
+  common-areas:
+    image: aurora-portal-gemini-api:local
+  agenda:
+    image: aurora-portal-gemini-api:local
+  visits:
+    image: aurora-portal-gemini-api:local
+  parameters:
+    image: aurora-portal-gemini-api:local
+  agent:
+    image: aurora-portal-gemini-api:local
+    environment:
+      AURORA_AGENT_ENABLED: "1"
+      AURORA_RESIDENT_ACTIONS: "1"
+      AURORA_AGENT_MODEL: ${AURORA_PORTAL_MODEL:-gemini-3.5-flash-lite}
+      AURORA_AGENT_SESSION_DATABASE_URL: sqlite+aiosqlite:////app/session-data/agent.db
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:?Existing Google key required}
+    volumes:
+      - agent-session-data:/app/session-data
+    depends_on:
+      session-init:
+        condition: service_completed_successfully
+  session-init:
+    image: aurora-portal-gemini-api:local
+    user: "0:0"
+    entrypoint: ["sh", "-c"]
+    command: ["chown 10001:10001 /app/session-data"]
+    volumes:
+      - agent-session-data:/app/session-data
+    restart: "no"
+  web:
+    image: aurora-portal-gemini-web:local
+volumes:
+  agent-session-data:

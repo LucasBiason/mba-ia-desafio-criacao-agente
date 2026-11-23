@@ -1,0 +1,38 @@
+{
+  "version": "fixture-art36-v1",
+  "timezone": "America/Sao_Paulo",
+  "provenance": "dados/areas.json + regulamento Art.36; tariff configuration supplied by caller",
+  "holidays": [],
+  "areas": [
+    {
+      "area": "churrasqueira",
+      "fee_cents": 8000,
+      "blocked_weekdays": [],
+      "windows": [],
+      "cancel_business_days": null,
+      "source_articles": [
+        "Art.36"
+      ]
+    },
+    {
+      "area": "quadra",
+      "fee_cents": 0,
+      "blocked_weekdays": [],
+      "windows": [],
+      "cancel_business_days": null,
+      "source_articles": [
+        "Art.36"
+      ]
+    },
+    {
+      "area": "salao-de-festas",
+      "fee_cents": 15000,
+      "blocked_weekdays": [],
+      "windows": [],
+      "cancel_business_days": null,
+      "source_articles": [
+        "Art.36"
+      ]
+    }
+  ]
+}

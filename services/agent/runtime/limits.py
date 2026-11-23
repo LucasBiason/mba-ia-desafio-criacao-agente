@@ -1,0 +1,5 @@
+"""Orçamento de latência, sem importar ADK ou ativar provedor."""
+
+MODEL_HTTP_TIMEOUT_MS = 15000
+AGENT_EXECUTION_TIMEOUT_SECONDS = 60
+AGENT_UPSTREAM_READ_TIMEOUT_SECONDS = 65

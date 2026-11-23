@@ -14,12 +14,16 @@ case "${1:-}" in
     exec uvicorn "$APP_MODULE" --host 0.0.0.0 --port "${PORT:-8000}" \
       --root-path "${ROOT_PATH:-}" --no-access-log "$@"
     ;;
+  initialize)
+    shift
+    exec python -m services.initialize "$@"
+    ;;
   test)
     shift
     exec python -m pytest "$@"
     ;;
   *)
-    echo 'Uso: entrypoint.sh dev|runserver|prod|test [argumentos]' >&2
+    echo 'Uso: entrypoint.sh dev|runserver|prod|initialize|test [argumentos]' >&2
     exit 2
     ;;
 esac

@@ -10,3 +10,4 @@ Registros produzidos por sdd-design-docs. As escolhas explicitamente definidas n
 | ADR-0004 | [Compartilhar infraestrutura HTTP e padronizar a operação](ADR-0004-toolkit-e-operacao-dos-servicos.md) | accepted | F01 |
 | ADR-0005 | [Manter um regulamento vigente com versões imutáveis](ADR-0005-regulamento-unico-versionado.md) | accepted | F06 |
 | ADR-0006 | [Preservar provisoriamente os dois bancos da base](ADR-0006-persistencia-compartilhada-da-base.md) | proposed | F01 |
+| ADR-0007 | [Separar framework e ciclo de vida](ADR-0007-framework-e-ciclo-de-vida.md) | accepted | F01 |

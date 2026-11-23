@@ -15,11 +15,11 @@ A intenção de produto, as regras e os marcos de aceite vêm do [requisito F06]
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal opt-in de QA e API acadêmica. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
-A edição sai do painel autenticado e chega ao domínio. A operação registra na mesma gravação o texto, a versão, a autoridade e o instante. A futura consulta por assunto usa o texto vigente, por meio de uma ferramenta proposta no roteiro.
+A edição sai do painel autenticado e chega ao domínio. A operação registra na mesma gravação o texto, a versão, a autoridade e o instante. A consulta por assunto recupera a versão publicada e só entrega o trecho relevante. Se não encontrar regra específica, a resposta informa a limitação sem inventar prazo, multa ou gratuidade. A consulta não executa uma ação.
 
 ## 3. Decisões técnicas
 
@@ -31,12 +31,12 @@ Usar versões numeradas e comparar a versão-base no momento da publicação. Es
 
 | Camada | Arquivo | Responsabilidade |
 | --- | --- | --- |
-| Router | services/settings/routers/regulation_router.py | Receber DTO e identidade e chamar o controller |
-| Controller | services/settings/controllers/regulation_controller.py | Coordenar validação, persistência e serialização |
-| Validator | services/settings/validators/regulation_validator.py | Verificar permissão e regras da operação |
-| Repository | services/settings/repositories/regulation_repository.py | Consultar e escrever com SQLAlchemy em transação |
-| Serializer | services/settings/serializers/regulation_serializer.py | Produzir DTO público sem campos internos |
-| Composição | services/settings/main.py | Montar routers, middleware, Swagger e health do toolkit |
+| Router | services/parameters/routers/regulation_router.py | Receber DTO e identidade e chamar o controller |
+| Controller | services/parameters/controllers/regulation_controller.py | Coordenar validação, persistência e serialização |
+| Validator | services/parameters/validators/regulation_validator.py | Verificar permissão e regras da operação |
+| Repository | services/parameters/repositories/regulation_repository.py | Consultar e escrever com SQLAlchemy em transação |
+| Serializer | services/parameters/serializers/regulation_serializer.py | Produzir DTO público sem campos internos |
+| Composição | services/parameters/main.py | Montar routers, middleware, Swagger e health do toolkit |
 
 As schemas Pydantic validam tipo e formato. Validators não gravam e controllers não acessam Session ou engine. O repository aplica flush, locks e constraints conforme a operação. Falha faz rollback. A documentação OpenAPI declara os contratos de entrada, saída, erros e autenticação.
 

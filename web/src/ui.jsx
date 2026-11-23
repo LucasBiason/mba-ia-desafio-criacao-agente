@@ -51,13 +51,14 @@ export function Empty({ title = "Nenhum registro encontrado.", children }) {
   </div>;
 }
 
-export function Table({ label, columns, rows, getKey }) {
+export function Table({ label, columns, rows, getKey, onRowClick }) {
   if (!rows.length) return <Empty />;
   return <div className="table-scroll" tabIndex={0} role="region" aria-label={label}>
     <table>
       <caption className="sr-only">{label}</caption>
       <thead><tr>{columns.map(column => <th scope="col" key={column.title}>{column.title}</th>)}</tr></thead>
-      <tbody>{rows.map(row => <tr key={getKey(row)}>{columns.map(column =>
+      <tbody>{rows.map(row => <tr key={getKey(row)} className={onRowClick ? "table-row-clickable" : undefined}
+        onClick={onRowClick ? () => onRowClick(row) : undefined}>{columns.map(column =>
         <td key={column.title}>{column.render(row)}</td>
       )}</tr>)}</tbody>
     </table>

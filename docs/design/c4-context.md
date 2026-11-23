@@ -28,8 +28,10 @@ O operador local prepara o ambiente por Makefile/Compose; ele não é um ator de
 | Áreas comuns | FastAPI | Catálogo e taxa |
 | Agenda | FastAPI | Projeções de reservas e horários administrativos |
 | Visitas | FastAPI | Autorizações existentes e horários |
-| Configurações | FastAPI | Regulamento vigente e versões |
+| Parâmetros | FastAPI | Regulamento vigente e versões |
 | Fronteira do agente | FastAPI | Sessões persistidas e indisponibilidade explícita da integração |
+| Preparação de identidade | Python, job finito | Cria tabelas e dados iniciais de auth/users antes dos servidores |
+| Preparação de condomínio | Python, job finito | Cria tabelas e fontes dos domínios antes dos servidores |
 | Identidade | PostgreSQL | Contas e sessões; compartilhado por auth/users |
 | Condomínio | PostgreSQL | Unidades, vínculos, áreas, reservas, visitas, regulamento e sessões de chat |
 
@@ -46,7 +48,7 @@ flowchart LR
         WEB -->|"Catálogo"| AREAS["common-areas · FastAPI"]
         WEB -->|"Agenda e horários"| AGENDA["agenda · FastAPI"]
         WEB -->|"Visitas e horários"| VISITS["visits · FastAPI"]
-        WEB -->|"Regulamento"| SETTINGS["settings · FastAPI"]
+        WEB -->|"Regulamento"| PARAMETERS["parameters · FastAPI"]
         WEB -->|"Sessões"| AGENT["agent · FastAPI<br/>integração futura"]
         AUTH -->|"ORM / PostgreSQL"| IDDB[("Banco identidade")]
         USERS -->|"ORM / PostgreSQL"| IDDB
@@ -54,11 +56,13 @@ flowchart LR
         AREAS -->|"ORM / PostgreSQL"| DB
         AGENDA -->|"ORM / PostgreSQL"| DB
         VISITS -->|"ORM / PostgreSQL"| DB
-        SETTINGS -->|"ORM / PostgreSQL"| DB
+        PARAMETERS -->|"ORM / PostgreSQL"| DB
         AGENT -->|"ORM de sessões"| DB
+        INITID["identity-init · preparação"] -.->|"ORM antes dos servidores"| IDDB
+        INITCONDO["condo-init · preparação"] -.->|"ORM antes dos servidores"| DB
     end
 ```
 
 As sete aplicações consumidoras consultam auth por HTTP interno para verificar identidade antes das operações privadas. Apartamentos também consulta a projeção interna de usuários para validar o responsável. Esses contratos são documentados em F02/F03/F04. O gateway não publica os caminhos internos. A separação de aplicações não implica um banco por serviço.
 
-O toolkit é uma dependência Python dessas aplicações, não um processo HTTP separado. Ele fornece autenticação de transporte, logs, correlação, erros e health; a aplicação define autorização de negócio e prontidão. O [fluxo de requisição](architecture.md#4-fluxos-de-requisições-e-dados) detalha a ordem das camadas e recusas.
+O microservice-toolkit fornece a infraestrutura Python: ciclo de vida, autenticação de transporte, ORM, logs, correlação, erros e health de liveness. O aurora-toolkit fornece os tipos, permissões e protocolo de identidade do cluster. Os jobs finitos coordenam os bootstrap.py antes de iniciar os servidores, preservando tabelas existentes. O [fluxo de requisição](architecture.md#4-fluxos-de-requisições-e-dados) detalha a ordem das camadas e recusas.

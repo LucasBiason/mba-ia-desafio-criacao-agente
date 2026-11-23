@@ -1,6 +1,6 @@
 from microservice_toolkit import error
 
-from services.permissions import require_admin
+from aurora_toolkit.permissions import require_admin
 
 
 class AccountValidator:
@@ -38,8 +38,16 @@ class AccountValidator:
         if owner is not None and owner != user_id:
             raise error(409, "EMAIL_IN_USE", "Este e-mail já está cadastrado.")
         if values.get("role", account.role) != account.role:
-            raise error(409, "ROLE_IMMUTABLE", "O perfil da conta é definido no cadastro.")
-        if (account.role == "admin" and account.active and not values.get("active", account.active)
-                and not self.repository.other_active_admin(user_id)):
-            raise error(409, "LAST_ADMIN", "Mantenha pelo menos um administrador ativo.")
+            raise error(
+                409, "ROLE_IMMUTABLE", "O perfil da conta é definido no cadastro."
+            )
+        if (
+            account.role == "admin"
+            and account.active
+            and not values.get("active", account.active)
+            and not self.repository.other_active_admin(user_id)
+        ):
+            raise error(
+                409, "LAST_ADMIN", "Mantenha pelo menos um administrador ativo."
+            )
         return account

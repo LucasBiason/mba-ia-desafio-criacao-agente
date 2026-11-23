@@ -5,6 +5,8 @@ services:
     build:
       target: development
     command: ["dev"]
+    environment:
+      SERVICE_ENVIRONMENT: development
     volumes:
       - ./services:/app/services:ro
   users:
@@ -12,6 +14,8 @@ services:
     build:
       target: development
     command: ["dev"]
+    environment:
+      SERVICE_ENVIRONMENT: development
     volumes:
       - ./services:/app/services:ro
   apartments:
@@ -19,6 +23,8 @@ services:
     build:
       target: development
     command: ["dev"]
+    environment:
+      SERVICE_ENVIRONMENT: development
     volumes:
       - ./services:/app/services:ro
   common-areas:
@@ -26,6 +32,8 @@ services:
     build:
       target: development
     command: ["dev"]
+    environment:
+      SERVICE_ENVIRONMENT: development
     volumes:
       - ./services:/app/services:ro
   agenda:
@@ -33,6 +41,8 @@ services:
     build:
       target: development
     command: ["dev"]
+    environment:
+      SERVICE_ENVIRONMENT: development
     volumes:
       - ./services:/app/services:ro
   visits:
@@ -40,13 +50,17 @@ services:
     build:
       target: development
     command: ["dev"]
+    environment:
+      SERVICE_ENVIRONMENT: development
     volumes:
       - ./services:/app/services:ro
-  settings:
+  parameters:
     image: residencial-aurora-base-api:dev
     build:
       target: development
     command: ["dev"]
+    environment:
+      SERVICE_ENVIRONMENT: development
     volumes:
       - ./services:/app/services:ro
   agent:
@@ -54,5 +68,7 @@ services:
     build:
       target: development
     command: ["dev"]
+    environment:
+      SERVICE_ENVIRONMENT: development
     volumes:
       - ./services:/app/services:ro
