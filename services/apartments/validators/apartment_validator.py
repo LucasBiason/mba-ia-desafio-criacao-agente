@@ -1,7 +1,7 @@
 from microservice_toolkit import error
 
-from services.authentication.client import fetch_user
-from services.permissions import require_admin, require_resident
+from aurora_toolkit.identity import fetch_user
+from aurora_toolkit.permissions import require_admin, require_resident
 
 
 class ApartmentValidator:
@@ -12,7 +12,9 @@ class ApartmentValidator:
         require_admin(actor)
         self.responsible(data.resident_id)
         if self.repository.get(data.number) is not None:
-            raise error(409, "APARTMENT_EXISTS", "Já existe um apartamento com esse número.")
+            raise error(
+                409, "APARTMENT_EXISTS", "Já existe um apartamento com esse número."
+            )
 
     def responsible(self, resident_id):
         if resident_id is not None and fetch_user(resident_id)["role"] != "resident":
@@ -31,7 +33,9 @@ class ApartmentValidator:
         current = self.existing(number, lock=True)
         if data.number is not None and data.number != current[0].number:
             if self.repository.get(data.number) is not None:
-                raise error(409, "APARTMENT_EXISTS", "Já existe um apartamento com esse número.")
+                raise error(
+                    409, "APARTMENT_EXISTS", "Já existe um apartamento com esse número."
+                )
         return current
 
     def validate_delete(self, number, actor):

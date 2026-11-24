@@ -1,64 +1,64 @@
-# Contexto e aplicações — base administrativa
+# Contexto e aplicações — Residencial Aurora
 
-Estas visões C4 respondem quem usa o sistema e quais aplicações atendem a operação manual. Público: desenvolvimento e revisão do produto. Fontes: [PRD](../prd/index.md), [composição](../../compose.yaml), [gateway](../../web/nginx.conf), [ADR-0001](../adr/ADR-0001-servicos-por-dominio-e-camadas.md) e [ADR-0006](../adr/ADR-0006-persistencia-compartilhada-da-base.md). São projeções revisáveis da topologia implementada.
+Público: desenvolvimento e revisão. As visões respondem quem usa o sistema e quais processos atendem ao portal e à avaliação. Fontes: [PRD](../prd/index.md), [composição](../../configs/compose.yaml), [gateway do portal](../../services/frontend/nginx.conf) e [ADRs](../adr/README.md).
 
 ## C1 — limite do sistema
 
-A administração gerencia contas, apartamentos, áreas e regulamento e consulta reservas e visitas. O morador usa consultas restritas aos seus vínculos. Não há provedor de modelos necessário para a base manual.
-
 ```mermaid
 ---
-title: C1 — Contexto da base administrativa
+title: Residencial Aurora — c4-context 1
 ---
 flowchart LR
-    ADMIN["Administração"] -->|"Gerencia dados e consulta agenda por HTTP"| AURORA["Residencial Aurora<br/>Portal e APIs autenticadas"]
-    RESIDENT["Morador"] -->|"Consulta dados das unidades vinculadas por HTTP"| AURORA
+    ADMIN["Administração"] -->|"Gerencia o condomínio"| AURORA["Residencial Aurora"]
+    RESIDENT["Morador"] -->|"Consulta e solicita ações autorizadas"| AURORA
+    EVAL["Avaliador local"] -->|"Executa as seis rotas do assistente"| AURORA
+    AURORA -->|"Intenções e trechos necessários via HTTPS"| GEMINI["Gemini · Google AI Studio"]
 ```
 
-O operador local prepara o ambiente por Makefile/Compose; ele não é um ator de negócio do portal. A integração com Google ADK/Gemini e o adaptador acadêmico pertencem à próxima etapa. O contexto atual não representa uma fila, worker ou modelo como componente já entregue.
+A administração mantém contas, apartamentos, áreas, regulamento e horários; o morador acessa suas unidades e o assistente. O avaliador usa a interface do assistente isolada. O operador prepara o ambiente por Makefile/Compose. Pagamentos reais e deploy público não integram esta arquitetura.
 
 ## C2 — aplicações e persistência
 
-| Aplicação | Tecnologia | Responsabilidade e fronteira |
-| --- | --- | --- |
-| Portal e gateway | React e Nginx | Interface, navegação e encaminhamento HTTP na mesma origem |
-| Autenticação | FastAPI | Credencial, JWT, sessão revogável e introspecção interna |
-| Usuários | FastAPI | Contas, dados públicos e proteção da última administração |
-| Apartamentos | FastAPI | Unidades e responsável atual |
-| Áreas comuns | FastAPI | Catálogo e taxa |
-| Agenda | FastAPI | Projeções de reservas e horários administrativos |
-| Visitas | FastAPI | Autorizações existentes e horários |
-| Configurações | FastAPI | Regulamento vigente e versões |
-| Fronteira do agente | FastAPI | Sessões persistidas e indisponibilidade explícita da integração |
-| Identidade | PostgreSQL | Contas e sessões; compartilhado por auth/users |
-| Condomínio | PostgreSQL | Unidades, vínculos, áreas, reservas, visitas, regulamento e sessões de chat |
+| Aplicação ou armazenamento | Responsabilidade e fronteira |
+| --- | --- |
+| Frontend React/Nginx | Interface e roteamento autenticado na mesma origem |
+| auth e users | Identidade, JWT, contas e introspecção interna |
+| apartments e common-areas | Unidades, responsáveis e catálogo de áreas |
+| agenda, visits e parameters | Reservas, autorizações e revisões do regulamento |
+| agent | Sessões do morador, contexto, histórico e tools autorizadas |
+| Gateway e aplicação do assistente | Contrato local do avaliador, turnos ADK e confirmações |
+| PostgreSQL de identidade | Contas e sessões de login do portal |
+| PostgreSQL de condomínio | Cadastros, domínio e estado de conversa do produto |
+| Persistência ADK do portal | Sessões/eventos do runtime do assistente |
+| PostgreSQL do assistente | Domínio, pendências, recibos e sessões/eventos do assistente |
+| Jobs de preparação | Schema atual, fixtures e recursos antes dos servidores |
 
 ```mermaid
 ---
-title: C2 — Aplicações da base e bancos compartilhados
+title: Residencial Aurora — c4-context 2
 ---
-flowchart LR
-    USER["Navegador"] -->|"HTTP"| WEB["React e Nginx"]
-    subgraph SYSTEM["Residencial Aurora — aplicações"]
-        WEB -->|"Login e perfil"| AUTH["auth · FastAPI"]
-        WEB -->|"Contas"| USERS["users · FastAPI"]
-        WEB -->|"Unidades"| APTS["apartments · FastAPI"]
-        WEB -->|"Catálogo"| AREAS["common-areas · FastAPI"]
-        WEB -->|"Agenda e horários"| AGENDA["agenda · FastAPI"]
-        WEB -->|"Visitas e horários"| VISITS["visits · FastAPI"]
-        WEB -->|"Regulamento"| SETTINGS["settings · FastAPI"]
-        WEB -->|"Sessões"| AGENT["agent · FastAPI<br/>integração futura"]
-        AUTH -->|"ORM / PostgreSQL"| IDDB[("Banco identidade")]
-        USERS -->|"ORM / PostgreSQL"| IDDB
-        APTS -->|"ORM / PostgreSQL"| DB[("Banco condomínio")]
-        AREAS -->|"ORM / PostgreSQL"| DB
-        AGENDA -->|"ORM / PostgreSQL"| DB
-        VISITS -->|"ORM / PostgreSQL"| DB
-        SETTINGS -->|"ORM / PostgreSQL"| DB
-        AGENT -->|"ORM de sessões"| DB
-    end
+flowchart TB
+    BROWSER["Navegador"] -->|"HTTP autenticado"| WEB["Frontend · React/Nginx"]
+    WEB -->|"Login e perfil"| AUTH["auth"]
+    WEB -->|"Gestão de contas"| USERS["users"]
+    WEB -->|"Cadastros e agenda"| DOMAINS["apartments · common-areas<br/>agenda · visits · parameters"]
+    WEB -->|"Sessão e conversa"| AGENT["agent · ADK"]
+    USERS -->|"SQLAlchemy"| IDDB[("PostgreSQL identidade")]
+    AUTH -->|"SQLAlchemy"| IDDB
+    DOMAINS -->|"SQLAlchemy"| CONDODB[("PostgreSQL condomínio")]
+    DOMAINS -->|"Introspecção HTTP interna"| AUTH
+    AGENT -->|"Introspecção HTTP interna"| AUTH
+    AGENT -->|"SQLAlchemy · dados autorizados, histórico e admissão"| CONDODB
+    AGENT -->|"Sessões e eventos"| ADKDB[("SQLite · ADK portal")]
+    AGENT -->|"HTTPS"| GEMINI["Gemini"]
+    EVALUATOR["Avaliador · localhost:8000"] -->|"HTTP local"| GATEWAY["Gateway do assistente"]
+    GATEWAY -->|"HTTP local"| ACADEMIC["API do assistente · FastAPI/ADK"]
+    ACADEMIC -->|"ORM e ADK · turnos, domínio e eventos"| AGENTDB[("PostgreSQL do assistente")]
+    ACADEMIC -->|"HTTPS"| GEMINI
 ```
 
-As sete aplicações consumidoras consultam auth por HTTP interno para verificar identidade antes das operações privadas. Apartamentos também consulta a projeção interna de usuários para validar o responsável. Esses contratos são documentados em F02/F03/F04. O gateway não publica os caminhos internos. A separação de aplicações não implica um banco por serviço.
+A aplicação acadêmica é executada em duas réplicas no Compose; essa escolha de implantação compartilha o mesmo banco, sem alterar as fronteiras C2.
 
-O toolkit é uma dependência Python dessas aplicações, não um processo HTTP separado. Ele fornece autenticação de transporte, logs, correlação, erros e health; a aplicação define autorização de negócio e prontidão. O [fluxo de requisição](architecture.md#4-fluxos-de-requisições-e-dados) detalha a ordem das camadas e recusas.
+Os gateways e armazenamentos mantêm separadas as superfícies do assistente e do portal. A API do assistente não usa o banco do portal. O contexto do modelo é vinculado à sessão pelo servidor. A exclusividade da reserva é imposta no armazenamento compartilhado pelas réplicas.
+
+Os toolkits são dependências Python das aplicações: `microservice-toolkit` fornece infraestrutura; `aurora-toolkit`, convenções de identidade e domínio do cluster. Não são processos HTTP. Os preparadores finitos criam o schema atual e importam dados ausentes; não restauram volumes em uma partida normal. A operação e os fluxos estão na [arquitetura](architecture.md).

@@ -27,8 +27,8 @@ Permitir que cada conta confira nome, e-mail e tipo associados à sessão corren
 
 | ID | Condição | Resultado esperado | Como verificar |
 | --- | --- | --- | --- |
-| F14-AC01 | Uma conta autenticada; selecionar o nome na barra superior | a tela Meu perfil apresenta nome, e-mail e tipo da identidade autenticada. | Executar a jornada no perfil correspondente e comparar a saída com a API quando aplicável |
-| F14-AC02 | Sessão encerrada; tentar abrir a rota de perfil | o portal volta à entrada e a API privada recusa a sessão revogada. | Executar a jornada no perfil correspondente e comparar a saída com a API quando aplicável |
+| F14-AC01 | Uma conta autenticada; selecionar o nome na barra superior | a tela Meu perfil apresenta nome, e-mail e tipo da identidade autenticada. | Como QA_A e QA_ADMIN em contextos separados, abrir #/perfil pelo nome e comparar nome/email/role com GET /api/auth/me |
+| F14-AC02 | Sessão encerrada; tentar abrir a rota de perfil | o portal volta à entrada e a API privada recusa a sessão revogada. | Como QA_A, executar logout, reutilizar bearer em /api/auth/me e abrir #/perfil; conferir 401 e tela de entrada |
 
 ## Segurança
 

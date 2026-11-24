@@ -1,0 +1,416 @@
+name: residencial-aurora-base
+
+x-api: &api
+  init: true
+  healthcheck:
+    test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health', timeout=3).close()"]
+    interval: 5s
+    timeout: 4s
+    retries: 20
+    start_period: 4s
+
+x-endpoints: &endpoints
+  SERVICE_ENVIRONMENT: ${SERVICE_ENVIRONMENT:-production}
+  REQUIRED_SECRETS: AURORA_INTERNAL_TOKEN
+  INTERNAL_TOKEN_ENV: AURORA_INTERNAL_TOKEN
+  AURORA_AUTH_URL: http://auth:8000
+  AURORA_USERS_URL: http://users:8000
+  AURORA_AGENT_URL: http://agent:8000
+  AURORA_INTERNAL_TOKEN: ${AURORA_INTERNAL_TOKEN:?Prepare configs/.env.}
+
+x-agent-api: &agent-api
+  image: aurora-agent-api:${AURORA_IMAGE_TAG:-local}
+  build:
+    context: ..
+    dockerfile: services/agent/Dockerfile
+    target: api
+  init: true
+  environment: &agent-api-env
+    AURORA_DOMAIN_DSN: postgresql://aurora_agent:${AURORA_AGENT_DB_PASSWORD:?Prepare configs/.env.}@agent-db:5432/aurora_agent
+    AURORA_SESSION_DSN: postgresql+psycopg://aurora_agent:${AURORA_AGENT_DB_PASSWORD:?Prepare configs/.env.}@agent-db:5432/aurora_agent
+    AURORA_MODEL: "${AURORA_MODEL:-gemini-3.5-flash-lite}"
+    GOOGLE_API_KEY: "${GOOGLE_API_KEY:-}"
+  volumes:
+    - ../dados:/app/dados:ro
+  networks: [agent-api]
+  read_only: true
+  tmpfs: [/tmp]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  healthcheck:
+    test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/docs', timeout=3).close()"]
+    interval: 5s
+    timeout: 4s
+    retries: 20
+    start_period: 10s
+
+services:
+  identity-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: aurora_identity
+      POSTGRES_USER: aurora
+      POSTGRES_PASSWORD: ${AURORA_IDENTITY_PASSWORD:?Prepare configs/.env.}
+    volumes:
+      - identity-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "aurora", "-d", "aurora_identity"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  condo-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: aurora_condo
+      POSTGRES_USER: aurora
+      POSTGRES_PASSWORD: ${AURORA_CONDO_PASSWORD:?Prepare configs/.env.}
+    volumes:
+      - condo-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "aurora", "-d", "aurora_condo"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  agent-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: aurora_agent
+      POSTGRES_USER: aurora_agent
+      POSTGRES_PASSWORD: ${AURORA_AGENT_DB_PASSWORD:?Prepare configs/.env.}
+    volumes:
+      - agent-db-data:/var/lib/postgresql/data
+    networks: [agent-api]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "aurora_agent", "-d", "aurora_agent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  identity-init:
+    image: aurora-users:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: services/users/Dockerfile
+      target: production
+    command: ["initialize", "identity"]
+    init: true
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+      DEMO_SUPER_PASSWORD: ${DEMO_SUPER_PASSWORD:?Prepare configs/.env.}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?Prepare configs/.env.}
+      DEMO_RESIDENT_PASSWORD: ${DEMO_RESIDENT_PASSWORD:?Prepare configs/.env.}
+    volumes:
+      - ../dados:/app/dados:ro
+    depends_on:
+      identity-db:
+        condition: service_healthy
+
+  condo-init:
+    image: aurora-agent:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: services/agent/Dockerfile
+      target: production
+    command: ["initialize", "condominium"]
+    init: true
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ../dados:/app/dados:ro
+    depends_on:
+      condo-db:
+        condition: service_healthy
+
+  session-init:
+    image: aurora-agent:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: services/agent/Dockerfile
+      target: production
+    user: "0:0"
+    entrypoint: ["python", "-c"]
+    command:
+      - |
+        import os
+        os.chown("/app/session-data", 10001, 10001)
+        os.setgroups([])
+        os.setgid(10001)
+        os.setuid(10001)
+        os.execvp("python", ["python", "-m", "services.initialize", "agent-sessions"])
+    environment:
+      AURORA_AGENT_SESSION_DATABASE_URL: sqlite+aiosqlite:////app/session-data/agent.db
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETGID, SETUID]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - agent-session-data:/app/session-data
+    restart: "no"
+
+  auth:
+    <<: *api
+    image: aurora-auth:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: services/authentication/Dockerfile
+      target: ${AURORA_BUILD_TARGET:-production}
+    command: ["${AURORA_RUN_MODE:-prod}"]
+    environment:
+      <<: *endpoints
+      ROOT_PATH: /services/auth
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+      REQUIRED_SECRETS: AURORA_INTERNAL_TOKEN,AURORA_JWT_KEY
+      AURORA_JWT_KEY: ${AURORA_JWT_KEY:?Prepare configs/.env.}
+    volumes:
+      - ../dados:/app/dados:ro
+    depends_on:
+      identity-init:
+        condition: service_completed_successfully
+
+  users:
+    <<: *api
+    image: aurora-users:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: services/users/Dockerfile
+      target: ${AURORA_BUILD_TARGET:-production}
+    command: ["${AURORA_RUN_MODE:-prod}"]
+    environment:
+      <<: *endpoints
+      ROOT_PATH: /services/users
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_IDENTITY_PASSWORD}@identity-db:5432/aurora_identity?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ../dados:/app/dados:ro
+    depends_on:
+      identity-init:
+        condition: service_completed_successfully
+      auth:
+        condition: service_healthy
+
+  apartments:
+    <<: *api
+    image: aurora-apartments:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: services/apartments/Dockerfile
+      target: ${AURORA_BUILD_TARGET:-production}
+    command: ["${AURORA_RUN_MODE:-prod}"]
+    environment:
+      <<: *endpoints
+      ROOT_PATH: /services/apartments
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ../dados:/app/dados:ro
+    depends_on:
+      condo-init:
+        condition: service_completed_successfully
+      auth:
+        condition: service_healthy
+
+  common-areas:
+    <<: *api
+    image: aurora-common-areas:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: services/common_areas/Dockerfile
+      target: ${AURORA_BUILD_TARGET:-production}
+    command: ["${AURORA_RUN_MODE:-prod}"]
+    environment:
+      <<: *endpoints
+      ROOT_PATH: /services/common-areas
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ../dados:/app/dados:ro
+    depends_on:
+      condo-init:
+        condition: service_completed_successfully
+      auth:
+        condition: service_healthy
+
+  agenda:
+    <<: *api
+    image: aurora-agenda:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: services/agenda/Dockerfile
+      target: ${AURORA_BUILD_TARGET:-production}
+    command: ["${AURORA_RUN_MODE:-prod}"]
+    environment:
+      <<: *endpoints
+      ROOT_PATH: /services/agenda
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ../dados:/app/dados:ro
+    depends_on:
+      condo-init:
+        condition: service_completed_successfully
+      auth:
+        condition: service_healthy
+
+  visits:
+    <<: *api
+    image: aurora-visits:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: services/visits/Dockerfile
+      target: ${AURORA_BUILD_TARGET:-production}
+    command: ["${AURORA_RUN_MODE:-prod}"]
+    environment:
+      <<: *endpoints
+      ROOT_PATH: /services/visits
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ../dados:/app/dados:ro
+    depends_on:
+      condo-init:
+        condition: service_completed_successfully
+      auth:
+        condition: service_healthy
+
+  parameters:
+    <<: *api
+    image: aurora-parameters:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: services/parameters/Dockerfile
+      target: ${AURORA_BUILD_TARGET:-production}
+    command: ["${AURORA_RUN_MODE:-prod}"]
+    environment:
+      <<: *endpoints
+      ROOT_PATH: /services/parameters
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+    volumes:
+      - ../dados:/app/dados:ro
+    depends_on:
+      condo-init:
+        condition: service_completed_successfully
+      auth:
+        condition: service_healthy
+
+  agent:
+    <<: *api
+    image: aurora-agent:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: services/agent/Dockerfile
+      target: ${AURORA_BUILD_TARGET:-production}
+    command: ["${AURORA_RUN_MODE:-prod}"]
+    environment:
+      <<: *endpoints
+      ROOT_PATH: /services/agent
+      DATABASE_URL: postgresql+psycopg://aurora:${AURORA_CONDO_PASSWORD}@condo-db:5432/aurora_condo?connect_timeout=3
+      AURORA_DATA_DIR: /app/dados
+      AURORA_AGENT_ENABLED: "${AURORA_AGENT_ENABLED:-1}"
+      AURORA_RESIDENT_ACTIONS: "${AURORA_RESIDENT_ACTIONS:-1}"
+      AURORA_AGENT_MODEL: ${AURORA_PORTAL_MODEL:-gemini-3.5-flash-lite}
+      AURORA_AGENT_SESSION_DATABASE_URL: sqlite+aiosqlite:////app/session-data/agent.db
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+    volumes:
+      - ../dados:/app/dados:ro
+      - agent-session-data:/app/session-data
+    depends_on:
+      condo-init:
+        condition: service_completed_successfully
+      auth:
+        condition: service_healthy
+      session-init:
+        condition: service_completed_successfully
+
+  web:
+    image: aurora-frontend:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ../services/frontend
+    ports:
+      - "127.0.0.1:8770:80"
+    depends_on:
+      auth:
+        condition: service_healthy
+      users:
+        condition: service_healthy
+      apartments:
+        condition: service_healthy
+      common-areas:
+        condition: service_healthy
+      agenda:
+        condition: service_healthy
+      visits:
+        condition: service_healthy
+      parameters:
+        condition: service_healthy
+      agent:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  agent-init:
+    <<: *agent-api
+    command: ["api", "init"]
+    restart: "no"
+    healthcheck:
+      disable: true
+    depends_on:
+      agent-db:
+        condition: service_healthy
+
+  agent-a:
+    <<: *agent-api
+    environment:
+      <<: *agent-api-env
+      AURORA_REPLICA_ID: agent-a
+    command: ["api", "serve", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      agent-init:
+        condition: service_completed_successfully
+
+  agent-b:
+    <<: *agent-api
+    environment:
+      <<: *agent-api-env
+      AURORA_REPLICA_ID: agent-b
+    command: ["api", "serve", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      agent-init:
+        condition: service_completed_successfully
+
+  agent-gateway:
+    image: aurora-agent-gateway:${AURORA_IMAGE_TAG:-local}
+    build:
+      context: ../services/agent_gateway
+    ports:
+      - "127.0.0.1:8000:80"
+    networks: [agent-api]
+    depends_on:
+      agent-a:
+        condition: service_healthy
+      agent-b:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/docs"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+
+networks:
+  agent-api:
+
+volumes:
+  identity-data:
+  condo-data:
+  agent-session-data:
+  agent-db-data:
+    name: ${AURORA_AGENT_VOLUME_NAME:-${COMPOSE_PROJECT_NAME}_agent-db-data}

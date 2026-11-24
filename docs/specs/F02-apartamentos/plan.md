@@ -26,5 +26,5 @@
 - Tipo: comportamento.
 - Depende de: operações descritas nos passos anteriores na etapa de cada critério.
 - Ações: preparar massa descartável e localizar as fronteiras que fornecem a prova para cadastro de apartamentos.
-- Testes: Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas.
+- Testes: enviar PATCH /api/admin/apartments/9101 com number=9199 usando QA_A e consultar 9101 como QA_ADMIN; confirmar que PATCH retorna 403 e a consulta administrativa conserva número e vínculo originais; consultar GET /api/resident/apartments com QA_A e inspecionar resposta e log sanitizado; confirmar que lista contém 9101, não contém 9102 nem campos password_hash, credenciais ou bearer.
 - Critérios: NFR01-AC01, NFR03-AC01.

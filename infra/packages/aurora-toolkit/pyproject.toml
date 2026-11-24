@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aurora-toolkit"
+version = "0.1.0"
+description = "Convenções de identidade, tipos e dados do Residencial Aurora"
+requires-python = ">=3.12"
+dependencies = ["microservice-toolkit==0.1.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aurora_toolkit"]

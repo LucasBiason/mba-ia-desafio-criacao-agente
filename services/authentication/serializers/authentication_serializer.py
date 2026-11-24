@@ -6,5 +6,9 @@ from services.users.serializers.account_serializer import AccountSerializer
 class AuthenticationSerializer:
     @staticmethod
     def token(account, access_token):
-        return LoginRead(access_token=access_token, token_type="bearer", expires_in=SESSION_SECONDS,
-                         user=AccountSerializer.serialize(account))
+        return LoginRead(
+            access_token=access_token,
+            token_type="bearer",
+            expires_in=SESSION_SECONDS,
+            user=AccountSerializer.serialize(account),
+        )

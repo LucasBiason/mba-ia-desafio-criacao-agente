@@ -26,5 +26,5 @@
 - Tipo: comportamento.
 - Depende de: operações descritas nos passos anteriores na etapa de cada critério.
 - Ações: preparar massa descartável e localizar as fronteiras que fornecem a prova para autenticação e autorização.
-- Testes: Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas.
+- Testes: reutilizar esse bearer em GET /api/auth/me; confirmar que HTTP 401 INVALID_SESSION e ausência de perfil no corpo; executar POST /api/auth/login com senha inválida e GET /api/auth/me com a sessão válida; inspecionar corpos e logs sanitizados; confirmar que recusa 401 não repete a senha, perfil 200 exclui password_hash e logs não contêm senha nem token.
 - Critérios: NFR01-AC01, NFR03-AC01.

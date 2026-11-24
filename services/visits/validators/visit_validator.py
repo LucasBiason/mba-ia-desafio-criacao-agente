@@ -1,6 +1,6 @@
 from microservice_toolkit import error
 
-from services.permissions import require_admin
+from aurora_toolkit.permissions import require_admin
 from services.apartments.validators.unit_scope_validator import UnitScopeValidator
 from services.visits.schemas.visit_hours import VisitHours
 
@@ -22,10 +22,19 @@ class VisitValidator:
         record = self.repository.get(visit_id)
         if record is None:
             raise error(404, "VISIT_NOT_FOUND", "Visita não encontrada.")
-        values = {field: value.strftime("%H:%M") if value else None
-                  for field, value in (("entry_time", record.entry_time), ("exit_time", record.exit_time))}
+        values = {
+            field: value.strftime("%H:%M") if value else None
+            for field, value in (
+                ("entry_time", record.entry_time),
+                ("exit_time", record.exit_time),
+            )
+        }
         values.update(data.model_dump(exclude_unset=True))
         hours = VisitHours.model_validate(values)
-        if hours.exit_time is not None and (hours.entry_time is None or hours.entry_time >= hours.exit_time):
-            raise error(422, "INVALID_VISIT_HOURS", "A saída deve ser posterior à entrada.")
+        if hours.exit_time is not None and (
+            hours.entry_time is None or hours.entry_time >= hours.exit_time
+        ):
+            raise error(
+                422, "INVALID_VISIT_HOURS", "A saída deve ser posterior à entrada."
+            )
         return record, hours

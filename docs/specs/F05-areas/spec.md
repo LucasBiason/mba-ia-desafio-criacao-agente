@@ -15,7 +15,7 @@ A intenção de produto, as regras e os marcos de aceite vêm do [requisito F05]
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal com assistente e API do assistente. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
@@ -60,5 +60,5 @@ Chave repetida causa conflito, valor negativo rejeita o cadastro e área referen
 | F05-AC03 | Base. Autenticar como morador, tentar PATCH na rota administrativa e consultar o catálogo. | A operação é recusada e a resposta seguinte preserva o valor. |
 | F05-AC04 | Base. Executar as duas exclusões, comparar catálogo e consultar agenda da área referenciada. | A primeira exclusão é recusada e a segunda remove o cadastro independente. |
 | F05-SEC01 | Base. Consultar as rotas de catálogo e administração sem bearer. | A API recusa o acesso autenticado sem revelar detalhes internos. |
-| NFR01-AC01 | Base. Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. | A fronteira recusa acesso ou mantém a ação pendente conforme o caso. A operação indevida não altera estado. |
-| NFR02-AC01 | Base. Comparar estado e resposta da operação em volume isolado. Induzir concorrência quando a funcionalidade tiver disputa de escrita. | Efeito confirmado permanece. A falha é observável e o domínio fica consistente. |
+| NFR01-AC01 | Base: HTTP real. Dado QA_AREA existe com fee_cents=100 e QA_A é resident; quando enviar PATCH /api/admin/areas/{QA_AREA} com fee_cents=200 usando QA_A e reler como QA_ADMIN. | Então HTTP 403 e taxa original 100 preservada. |
+| NFR02-AC01 | Base: HTTP real e reinício. Dado QA_AREA foi criada por QA_ADMIN com fee_cents=100; quando reiniciar common-areas e condo-db sem restore e consultar GET /api/admin/areas/{QA_AREA}. | Então HTTP 200 com o mesmo id, nome e taxa 100, sem segunda área. |

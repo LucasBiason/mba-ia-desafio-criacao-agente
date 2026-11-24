@@ -15,7 +15,7 @@ A intenção de produto, as regras e os marcos de aceite vêm do [requisito F03]
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal com assistente e API do assistente. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
@@ -42,7 +42,7 @@ As schemas Pydantic validam tipo e formato. Validators não gravam e controllers
 
 ## 5. Contratos de interface
 
-POST `/api/auth/login` recebe `email` e `password`, retorna `access_token`, `token_type`, `expires_in` e `user`. GET `/api/auth/me` apresenta o perfil público. POST `/api/auth/logout` responde 204 e revoga a sessão corrente. Use `Authorization: Bearer` nas APIs privadas. GET `/internal/identity` exige autorização serviço a serviço além do bearer e fica fora do proxy público.
+POST `/api/auth/login` recebe `email` e `password`, retorna `access_token`, `token_type`, `expires_in` e `user`. GET `/api/auth/me` apresenta o perfil público. POST `/api/auth/logout` responde 204 e revoga a sessão corrente. Use `Authorization: Bearer` nas APIs privadas. GET `/internal/identity` exige simultaneamente `Authorization: Bearer <JWT>` e `X-Aurora-Internal-Token` válido (security AND no OpenAPI) e fica fora do proxy público. Ausência de uma das credenciais recusa a introspecção; token interno sozinho não identifica a conta.
 
 Credencial ou token inválido, expirado ou revogado retorna 401. Papel insuficiente retorna 403. Dependência indisponível retorna 503 na rota consumidora e não causa operação parcial.
 
@@ -63,5 +63,5 @@ Conta persistida com hash de senha e estado ativo. Cada sessão tem identificado
 | F03-AC04 | Base. Induzir falha da introspecção, obter 503 e comparar o estado após reativar o serviço. | O consumidor devolve erro de dependência e não executa a ação. |
 | F03-SEC01 | Base. Fazer logout, retomar a rota privada e reapresentar o bearer anterior. | A sessão perde validade no servidor e o navegador retorna ao login. |
 | F03-SEC02 | Base. Comparar corpo e status dos erros e revisar o conteúdo do registro da aplicação. | A resposta recusa acesso sem confirmar a existência da conta ou revelar segredo. |
-| NFR01-AC01 | Base. Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. | A fronteira recusa acesso ou mantém a ação pendente conforme o caso. A operação indevida não altera estado. |
-| NFR03-AC01 | Base. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas. | A evidência não inclui segredos ou objetos de unidades fora da autorização. |
+| NFR01-AC01 | Base: HTTP real. Dado Um bearer QA_A foi emitido e encerrado por POST /api/auth/logout; quando reutilizar esse bearer em GET /api/auth/me. | Então HTTP 401 INVALID_SESSION e ausência de perfil no corpo. |
+| NFR03-AC01 | Base: HTTP real. Dado Um login sintético inválido e uma sessão QA_A válida; quando executar POST /api/auth/login com senha inválida e GET /api/auth/me com a sessão válida; inspecionar corpos e logs sanitizados. | Então recusa 401 não repete a senha, perfil 200 exclui password_hash e logs não contêm senha nem token. |

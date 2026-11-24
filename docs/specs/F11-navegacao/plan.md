@@ -9,7 +9,7 @@
 
 - Tipo: comportamento.
 - Depende de: identidade e projeções existentes.
-- Ações: conferir web/src/app.jsx; web/src/ui.jsx; web/src/styles/app.css contra cada cenário do PRD e preservar as rotas existentes.
+- Ações: conferir services/frontend/src/app.jsx; services/frontend/src/ui.jsx; services/frontend/src/styles/app.css contra cada cenário do PRD e preservar as rotas existentes.
 - Testes: exercitar as jornadas dos critérios no desktop e celular, conferir chamadas e saída.
 - Critérios: F11-AC01, F11-AC02, F11-AC03, F11-AC04, F11-SEC01.
 
@@ -26,5 +26,5 @@
 - Tipo: comportamento.
 - Depende de: API autenticada existente.
 - Ações: revisar a projeção usada pela tela e exercitar as recusas de acesso.
-- Testes: enviar requisições negativas e inspecionar respostas sanitizadas.
+- Testes: abrir #/admin/usuarios e solicitar GET /api/admin/users com o bearer QA_A; confirmar que API retorna 403 e nenhum usuário administrativo é exibido; inspecionar GET /api/auth/me e nomes acessíveis da navegação em cada sessão; confirmar que cada menu usa o papel da própria conta, sem senha, bearer ou perfil da outra sessão.
 - Critérios: NFR01-AC01, NFR03-AC01.

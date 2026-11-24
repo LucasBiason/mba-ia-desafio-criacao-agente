@@ -1,17 +1,17 @@
 # NFR03 — Privacidade e mínimo acesso
 
-Applies to: F02, F03, F04, F06, F07, F08, F09, F10
+Applies to: F02, F03, F04, F06, F07, F08, F09, F10, F11, F12, F13, F14
 
 ## Descrição
 
-Limitar campos ao necessário por papel e unidade. Razões de recusa e registros de teste usam dados fictícios e referências reduzidas. Credenciais e tokens não entram em logs publicados.
+Limitar projeções ao papel e ao vínculo verificado. Usar dados sintéticos na verificação e excluir senhas, hashes, bearer e segredos de respostas e evidência publicada.
 
 ## Critérios de aceite
 
 | ID | Condição | Resultado esperado | Como verificar |
 | --- | --- | --- | --- |
-| NFR03-AC01 | Operação privada bem-sucedida ou recusada | A evidência não inclui segredos ou objetos de unidades fora da autorização | Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas |
+| NFR03-AC01 | QA_A lê seu perfil e recursos de 9101; tenta recurso de QA_B/9102; consulta o histórico público | Somente campos autorizados são retornados e a recusa não revela conteúdo de QA_B; histórico público não contém instruções internas nem payloads de tools | Executar NFR03-AC01 de cada feature e inspecionar corpos e registros sanitizados contra os campos permitidos e os marcadores sintéticos de QA_B |
 
 ## Método de medição
 
-Execute o teste da matriz de cada funcionalidade em uma composição local isolada. Guarde os estados anterior e posterior, os códigos de resposta ou a verificação de serviço, e registre a revisão. Uma ausência de evidência permanece visível no relatório de validação.
+Use a composição isolada e os pré-requisitos do contrato de cada feature. Cada ramo tem uma requisição nomeada, identidade, estado anterior, resposta e estado posterior; não selecione somente o ramo favorável. Reinícios conservam volumes e não executam restore. Guarde as provas sanitizadas fora do repositório, identificadas por revisão e item P0D, e remova somente os recursos adquiridos para QA. Um lint documental não comprova runtime nem aceite humano. Backup, exportação e retenção adicional não integram este critério.

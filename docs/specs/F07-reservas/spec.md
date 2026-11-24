@@ -9,23 +9,25 @@ prd_source: docs/prd/functional/F07-reservas.md
 
 ## 1. Visão técnica
 
-A base fornece calendário administrativo por área, localização por código e edição do horário. O morador visualiza suas reservas na unidade selecionada. As operações de criar e cancelar reservas serão integradas no roteiro de agentes. Elas exigem código estável, exclusividade no armazenamento e validação de titularidade no cancelamento.
+A base fornece calendário administrativo por área, localização por código e edição do horário. O morador visualiza suas reservas na unidade selecionada. No assistente, criar e cancelar são tools com isolamento de unidade e recibo baseado no resultado do domínio. Elas exigem código estável, exclusividade no armazenamento e validação de titularidade no cancelamento.
 
 A intenção de produto, as regras e os marcos de aceite vêm do [requisito F07](../../prd/functional/F07-reservas.md). As decisões de composição e a separação de responsabilidades estão na [arquitetura](../../design/architecture.md). Este documento especifica os contratos da base e das etapas da integração identificadas na matriz.
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal com assistente e API do assistente. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
-O painel chama a API autenticada e usa filtros por área, data e estado. A interface do morador envia somente a unidade selecionada. A API verifica vínculo em cada leitura. O agente e as futuras tools recebem o contexto autenticado do servidor e executam regras do domínio antes de gravar.
+O painel chama a API autenticada e usa filtros por área, data e estado. A interface do morador envia somente a unidade selecionada. A API verifica vínculo em cada leitura. O agente e as tools recebem o contexto autenticado do servidor e executam regras do domínio antes de gravar.
 
 ## 3. Decisões técnicas
 
 Decisões arquiteturais relacionadas: [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md).
 
-O calendário abre no mês atual, com seleção de todas as áreas ou de uma área. No recorte consolidado a cor identifica a área. Clicar em um dia abre a lista completa daquele dia, inclusive quando está vazio. Buscar pelo código abre a área, o mês e o dia daquele registro. Os horários de início e fim são opcionais, devem ser preenchidos juntos e respeitar a ordem no mesmo dia. O banco preparado contém o índice parcial `reservations_active_slot` para registros ativos por área e data. A futura ferramenta escreve em transação e converte a colisão desse índice em indisponibilidade. Um código já emitido permanece indisponível após cancelamento. Por consistência, escolher uma única fonte da taxa e gravar o valor usado no efeito.
+O calendário abre no mês atual, com seleção de todas as áreas ou de uma área. No recorte consolidado a cor identifica a área. Clicar em um dia abre a lista completa daquele dia, inclusive quando está vazio. Buscar pelo código abre a área, o mês e o dia daquele registro. Os horários de início e fim são opcionais, devem ser preenchidos juntos e respeitar a ordem no mesmo dia. O banco preparado contém o índice parcial `reservations_active_slot` para registros ativos por área e data. A ferramenta escreve em transação e converte a colisão desse índice em indisponibilidade. Um código já emitido permanece indisponível após cancelamento. Por consistência, escolher uma única fonte da taxa e gravar o valor usado no efeito.
+
+O portal usa o [protocolo de delegação de F09](../F09-chat-agente/spec.md#protocolo-interno-de-delegação). `reserve`, `cancel` e `availability` exigem área e data validadas no servidor; o especialista não reescreve os argumentos do envelope. O executor emite resultado canônico e deduplica sua execução por turno. Reserva paga produz pendência com os detalhes originais; gratuita e cancelamento seguem suas regras sem confirmação. As constraints e o consumo único na transação continuam sendo a proteção de concorrência. A API do assistente em F10 conserva seu protocolo próprio.
 
 ## 4. Visão de componentes
 
@@ -42,9 +44,9 @@ As schemas Pydantic validam tipo e formato. Validators não gravam e controllers
 
 ## 5. Contratos de interface
 
-GET `/api/admin/reservations` para administração aceita `area_id`, `date` e `status` opcionais. GET `/api/resident/reservations?apartment=101` para morador; a unidade precisa pertencer à sessão autenticada do produto. A projeção inclui `code`, `apartment`, `area_id`, `area_name`, `date`, `fee_cents`, `status`, `start_time` e `end_time`. A administração recebe também `resident_id`, usado para mostrar o nome do titular. PATCH `/api/admin/reservations/{code}/hours` recebe os dois horários em `HH:MM` ou ambos nulos e devolve o registro atualizado. Aprovação e gravação no fluxo acadêmico são contratos de F09 e F10.
+GET `/api/admin/reservations` para administração aceita `area_id`, `date` e `status` opcionais. GET `/api/resident/reservations?apartment=101` para morador; a unidade precisa pertencer à sessão autenticada do produto. A projeção inclui `code`, `apartment`, `area_id`, `area_name`, `date`, `fee_cents`, `status`, `start_time` e `end_time`. A administração recebe também `resident_id`, usado para mostrar o nome do titular. PATCH `/api/admin/reservations/{code}/hours` recebe os dois horários em `HH:MM` ou ambos nulos e devolve o registro atualizado. Aprovação e gravação no fluxo do assistente são contratos de F09 e F10.
 
-A API recusa unidade fora do vínculo sem expor dados. A futura disputa devolve indisponibilidade sem identificar o vencedor. Falha de persistência não confirma efeito.
+A API recusa unidade fora do vínculo sem expor dados. A disputa devolve indisponibilidade sem identificar o vencedor. Falha de persistência não confirma efeito.
 
 ## 6. Modelo de dados
 
@@ -62,6 +64,8 @@ Reserva identifica código, área, unidade, data, estado e taxa histórica. Dado
 | F07-AC05 | Integração do agente. Executar as duas intenções e comparar eventos, pendências e reservas antes e depois da aprovação. | A gratuita é gravada sem pendência e a paga fica pendente até decisão pela API. |
 | F07-AC06 | Base. Atualizar horários válidos, testar intervalo invertido e acesso de morador à edição, consultar a reserva pelo titular. | Administração salva início e fim em ordem e o morador titular vê os horários. |
 | F07-SEC01 | Base. Consultar a API com dois vínculos distintos e comparar o corpo de recusa. | A API bloqueia acesso e o corpo não contém titular, códigos ou dados de outra unidade. |
-| NFR01-AC01 | Base. Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. | A fronteira recusa acesso ou mantém a ação pendente conforme o caso. A operação indevida não altera estado. |
-| NFR02-AC01 | Base. Comparar estado e resposta da operação em volume isolado. Induzir concorrência quando a funcionalidade tiver disputa de escrita. | Efeito confirmado permanece. A falha é observável e o domínio fica consistente. |
-| NFR03-AC01 | Base. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas. | A evidência não inclui segredos ou objetos de unidades fora da autorização. |
+| NFR01-AC01 | Base: HTTP real. Dado 9101 pertence a QA_A e 9102 a QA_B; quando consultar GET /api/resident/reservations?apartment=9102 com QA_A. | Então HTTP 403 APARTMENT_FORBIDDEN, sem reservas, códigos ou titular de 9102. |
+| NFR02-AC01 | Integração do agente: HTTP e banco reais. Dado Duas sessões autorizadas disputam a mesma QA_AREA paga na data QA_DAY livre; quando gerar duas pendências pelo protocolo delegar_solicitacao com operation=reserve e executar_reserva_validada e aprová-las simultaneamente; consultar a agenda e repetir a decisão vencedora. | Então existe exatamente uma reserva ativa para área/data, a outra execução informa indisponibilidade e reenvio sequencial retorna 409 sem segundo efeito. |
+| NFR03-AC01 | Base: HTTP real. Dado Há uma reserva QA_RES_A de QA_A/9101 e QA_RES_B de QA_B/9102; quando consultar GET /api/resident/reservations?apartment=9101 com QA_A e inspecionar o corpo. | Então apenas QA_RES_A é retornada; não há QA_RES_B, resident_id alheio, bearer nem segredo. |
+
+Nomes de áreas são resolvidos no catálogo por ID ou nome completo normalizado. Uma abreviação por palavras iniciais, como “salão”, só identifica uma área quando há exatamente uma correspondência. Nomes ambíguos ou inexistentes não permitem reservar nem cancelar.

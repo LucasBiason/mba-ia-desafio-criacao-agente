@@ -28,7 +28,7 @@ Responsabilidades explícitas, segurança por recurso, preservação dos dados e
 
 ## Resultado da decisão
 
-Vamos usar SQLAlchemy e limitar o acesso ao banco aos repositories. Transações, constraints e locks protegem a gravação; exceções fazem rollback. DDL de migração é separado de CRUD. A exclusividade de reserva ativa por área/data permanece no armazenamento; uma fila futura não substitui essa garantia.
+Vamos usar SQLAlchemy e limitar o acesso ao banco aos repositories. Transações, constraints e locks protegem a gravação; exceções fazem rollback. A preparação explícita de schema é separada de CRUD e da partida HTTP. A API pública do desafio usa models declarativos e repositories ORM com a mesma semântica transacional em SQLite e PostgreSQL. A exclusividade de reserva ativa por área/data permanece no armazenamento.
 
 ### Consequências
 

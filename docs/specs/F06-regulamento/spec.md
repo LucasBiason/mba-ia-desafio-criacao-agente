@@ -15,11 +15,11 @@ A intenção de produto, as regras e os marcos de aceite vêm do [requisito F06]
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal com assistente e API do assistente. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
-A edição sai do painel autenticado e chega ao domínio. A operação registra na mesma gravação o texto, a versão, a autoridade e o instante. A futura consulta por assunto usa o texto vigente, por meio de uma ferramenta proposta no roteiro.
+A edição sai do painel autenticado e chega ao domínio. A operação registra na mesma gravação o texto, a versão, a autoridade e o instante. A consulta por assunto recupera a versão publicada e só entrega o trecho relevante. Se não encontrar regra específica, a resposta informa a limitação sem inventar prazo, multa ou gratuidade. A consulta não executa uma ação.
 
 ## 3. Decisões técnicas
 
@@ -31,12 +31,12 @@ Usar versões numeradas e comparar a versão-base no momento da publicação. Es
 
 | Camada | Arquivo | Responsabilidade |
 | --- | --- | --- |
-| Router | services/settings/routers/regulation_router.py | Receber DTO e identidade e chamar o controller |
-| Controller | services/settings/controllers/regulation_controller.py | Coordenar validação, persistência e serialização |
-| Validator | services/settings/validators/regulation_validator.py | Verificar permissão e regras da operação |
-| Repository | services/settings/repositories/regulation_repository.py | Consultar e escrever com SQLAlchemy em transação |
-| Serializer | services/settings/serializers/regulation_serializer.py | Produzir DTO público sem campos internos |
-| Composição | services/settings/main.py | Montar routers, middleware, Swagger e health do toolkit |
+| Router | services/parameters/routers/regulation_router.py | Receber DTO e identidade e chamar o controller |
+| Controller | services/parameters/controllers/regulation_controller.py | Coordenar validação, persistência e serialização |
+| Validator | services/parameters/validators/regulation_validator.py | Verificar permissão e regras da operação |
+| Repository | services/parameters/repositories/regulation_repository.py | Consultar e escrever com SQLAlchemy em transação |
+| Serializer | services/parameters/serializers/regulation_serializer.py | Produzir DTO público sem campos internos |
+| Composição | services/parameters/main.py | Montar routers, middleware, Swagger e health do toolkit |
 
 As schemas Pydantic validam tipo e formato. Validators não gravam e controllers não acessam Session ou engine. O repository aplica flush, locks e constraints conforme a operação. Falha faz rollback. A documentação OpenAPI declara os contratos de entrada, saída, erros e autenticação.
 
@@ -60,5 +60,5 @@ Versão é chave numérica crescente. Cada revisão tem conteúdo, autoria públ
 | F06-AC03 | Base. Consultar o texto vigente como morador, tentar PUT na rota admin e comparar versões. | O acesso de escrita é recusado sem alteração do histórico. |
 | F06-AC04 | Base. Publicar alteração, reiniciar o domínio e comparar o histórico com a captura anterior. | A versão e o autor permanecem consultáveis após o reinício. |
 | F06-SEC01 | Base. Consultar ambos os caminhos e verificar o papel exigido. | A leitura vigente funciona e o histórico administrativo não é entregue ao morador. |
-| NFR02-AC01 | Base. Comparar estado e resposta da operação em volume isolado. Induzir concorrência quando a funcionalidade tiver disputa de escrita. | Efeito confirmado permanece. A falha é observável e o domínio fica consistente. |
-| NFR03-AC01 | Base. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas. | A evidência não inclui segredos ou objetos de unidades fora da autorização. |
+| NFR02-AC01 | Base: HTTP real e reinício. Dado QA_ADMIN leu a versão V do regulamento vigente; quando publicar um texto sintético novo em PUT /api/admin/regulation com base_version=V; reiniciar parameters e ler vigente e /versions. | Então vigente permanece V+1 e histórico conserva V e V+1 com o texto e autor publicados. |
+| NFR03-AC01 | Base: HTTP real. Dado QA_A é resident e QA_ADMIN publicou o texto sintético; quando consultar GET /api/resident/regulation e GET /api/admin/regulation/versions usando QA_A. | Então vigente retorna 200 sem credenciais; histórico administrativo retorna 403 sem revisões de autoria alheia. |

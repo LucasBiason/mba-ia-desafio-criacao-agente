@@ -35,10 +35,10 @@ Oferecer acesso aos caminhos autorizados por perfil, com barra lateral compacta 
 
 | ID | Condição | Resultado esperado | Como verificar |
 | --- | --- | --- | --- |
-| F11-AC01 | Um administrador ou morador autenticado; abrir seu portal | o menu mostra itens correspondentes ao perfil, ícones, nomes acessíveis e estado ativo. | Executar a jornada no perfil correspondente e comparar a saída com a API quando aplicável |
-| F11-AC02 | Uma tela com pelo menos 721 px; recolher e expandir o menu | o espaço do conteúdo acompanha o menu e todos os links conservam nomes acessíveis. | Executar a jornada no perfil correspondente e comparar a saída com a API quando aplicável |
-| F11-AC03 | Uma tela com até 720 px; abrir o menu, navegar, usar Escape ou tocar fora | o menu sobreposto fecha, permite navegação por teclado e não ocupa permanentemente o conteúdo. | Executar a jornada no perfil correspondente e comparar a saída com a API quando aplicável |
-| F11-AC04 | Menu aberto em celular; navegar pelo teclado e selecionar uma rota | o foco fica no diálogo durante a interação e chega ao conteúdo após a seleção. | Executar a jornada no perfil correspondente e comparar a saída com a API quando aplicável |
+| F11-AC01 | Um administrador ou morador autenticado; abrir seu portal | o menu mostra itens correspondentes ao perfil, ícones, nomes acessíveis e estado ativo. | Autenticar QA_ADMIN e QA_A em contextos separados, abrir #/inicio e comparar menus com role de /api/auth/me |
+| F11-AC02 | Uma tela com pelo menos 721 px; recolher e expandir o menu | o espaço do conteúdo acompanha o menu e todos os links conservam nomes acessíveis. | Em 1280×900, recolher e expandir a barra; medir o espaço de conteúdo e inspecionar nomes acessíveis de todos os links |
+| F11-AC03 | Uma tela com até 720 px; abrir o menu, navegar, usar Escape ou tocar fora | o menu sobreposto fecha, permite navegação por teclado e não ocupa permanentemente o conteúdo. | Em 390×844, abrir menu e executar navegação, Escape e toque externo em ensaios separados; conferir fechamento e conteúdo livre |
+| F11-AC04 | Menu aberto em celular; navegar pelo teclado e selecionar uma rota | o foco fica no diálogo durante a interação e chega ao conteúdo após a seleção. | Em 390×844, usar Tab e Shift+Tab no modal e ativar /areas; conferir foco retido no modal e depois no conteúdo |
 
 ## Segurança
 

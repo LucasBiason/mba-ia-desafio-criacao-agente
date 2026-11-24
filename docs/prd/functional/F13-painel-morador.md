@@ -27,8 +27,8 @@ Mostrar ao morador o resumo de sua unidade selecionada e os caminhos para consul
 
 | ID | Condição | Resultado esperado | Como verificar |
 | --- | --- | --- | --- |
-| F13-AC01 | Morador vinculado a uma unidade; abrir o portal e selecionar a unidade | o resumo usa somente as reservas e visitas permitidas para essa identidade. | Executar a jornada no perfil correspondente e comparar a saída com a API quando aplicável |
-| F13-AC02 | Morador sem unidade vinculada; abrir a visão geral | o estado vazio explica o vínculo necessário e não apresenta dados de terceiros. | Executar a jornada no perfil correspondente e comparar a saída com a API quando aplicável |
+| F13-AC01 | Morador vinculado a uma unidade; abrir o portal e selecionar a unidade | o resumo usa somente as reservas e visitas permitidas para essa identidade. | Como QA_A, selecionar 9101 e comparar resumo com GET /api/resident/reservations?apartment=9101 e /api/resident/visits?apartment=9101 |
+| F13-AC02 | Morador sem unidade vinculada; abrir a visão geral | o estado vazio explica o vínculo necessário e não apresenta dados de terceiros. | Desvincular 9101 de QA_A na massa descartável, abrir #/inicio como QA_A e conferir vazio sem consulta de dados de QA_B |
 
 ## Segurança
 

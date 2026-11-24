@@ -15,17 +15,21 @@ A intenção de produto, as regras e os marcos de aceite vêm do [requisito F08]
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal com assistente e API do assistente. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
-Consulta de visitante chega a `visits` e combina identidade com vínculo. A aula liga a ação de visitante à mesma infraestrutura de confirmações de reservas pagas. Uma ação pendente carrega somente o nome, a data e o apartamento já validado.
+Consulta de visitante chega a `visits` e combina identidade com vínculo. O agente liga a ação de visitante à mesma infraestrutura de confirmações de reservas pagas. Uma ação pendente carrega somente o nome, a data e o apartamento já validado.
 
 ## 3. Decisões técnicas
 
 Decisões arquiteturais relacionadas: [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md), [ADR-0003](../../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md).
 
-A edição administrativa atualiza apenas os horários de uma autorização existente. Entrada pode ser informada sem saída. Se houver saída, deve ser posterior à entrada no mesmo dia. O chat futuro pode pedir nome e data e propor autorização; o código persiste após decisão válida na rota. Atualizar estado e consumir a pendência uma única vez com fronteira consistente de falha e rollback.
+A proposta de visita segue a [delegação tipada do portal](../F09-chat-agente/spec.md#protocolo-interno-de-delegação) e o [ADR-0009](../../adr/ADR-0009-delegacao-tipada-e-recibos-do-servidor.md). O principal extrai nome e data do pedido atual; o servidor valida explicitamente o DTO e calcula o especialista de convivência. A ferramenta sem argumentos executa somente o envelope validado daquele turno. Identidade, unidade e elegibilidade são revalidadas pelo domínio.
+
+Nome e data válidos produzem uma pendência durável, com os detalhes originais, antes de responder ao morador. Uma confirmação verbal na mesma mensagem não aprova a visita. A rota humana recupera os argumentos da pendência; negar não cria autorização e aprovar consome o ID uma única vez. Repetir a ferramenta no mesmo turno conserva a proposta original; não gera outro UUID nem nova autorização. Histórico antigo, inclusive recusas do assistente, não concede nem retira permissão.
+
+A edição administrativa atualiza apenas os horários de uma autorização existente. Entrada pode ser informada sem saída. Se houver saída, deve ser posterior à entrada no mesmo dia. O chat pode pedir nome e data e propor autorização; o código persiste após decisão válida na rota. Atualizar estado e consumir a pendência uma única vez com fronteira consistente de falha e rollback.
 
 ## 4. Visão de componentes
 
@@ -42,9 +46,9 @@ As schemas Pydantic validam tipo e formato. Validators não gravam e controllers
 
 ## 5. Contratos de interface
 
-GET `/api/admin/visits` para administração aceita filtros opcionais `apartment` e `date`. GET `/api/resident/visits?apartment=101` para morador com vínculo. A projeção fornece `id`, `apartment`, `name`, `date`, `entry_time` e `exit_time`. PATCH `/api/admin/visits/{id}/hours` recebe um ou os dois horários em `HH:MM` ou nulo. Campos omitidos mantêm o valor atual e a resposta devolve a autorização atualizada. A confirmação acadêmica prevista em F10 usa a coleção `confirmacoes_pendentes` e a rota correspondente.
+GET `/api/admin/visits` para administração aceita filtros opcionais `apartment` e `date`. GET `/api/resident/visits?apartment=101` para morador com vínculo. A projeção fornece `id`, `apartment`, `name`, `date`, `entry_time` e `exit_time`. PATCH `/api/admin/visits/{id}/hours` recebe um ou os dois horários em `HH:MM` ou nulo. Campos omitidos mantêm o valor atual e a resposta devolve a autorização atualizada. A confirmação do portal prevista em F09 usa a coleção `confirmacoes_pendentes` e a rota correspondente.
 
-Data ou nome inválido pede correção. A consulta rejeita unidade alheia sem revelar registros. Na integração, recusa ou falha de execução impede novo efeito.
+Data ou nome inválido pede correção canônica sem pendência nem autorização. Ausência ou violação da chamada de ferramenta exigida é indisponibilidade de protocolo, sem efeito e sem falsa recusa de permissão. O recibo público deriva da execução do servidor; uma falha de geração posterior não repete a operação. A consulta rejeita unidade alheia sem revelar registros. Na integração, recusa ou falha de execução impede novo efeito.
 
 ## 6. Modelo de dados
 
@@ -61,6 +65,6 @@ Autorização persiste id, unidade, nome, data, titularidade e horários opciona
 | F08-AC04 | Base. Entrar pelos dois papéis, comparar a lista e validar unidade ativa, vazio e recusa fora do vínculo. | Administração consulta as autorizações e o morador vê somente a própria unidade. |
 | F08-AC05 | Base. Gravar entrada e saída, testar saída sem entrada e comparar a autorização antes e depois. | Administração registra entrada e saída, e a projeção exibe os valores preservando a data e a unidade. |
 | F08-SEC01 | Base. Variar a unidade enviada, inspecionar o corpo de recusa e a projeção legítima. | A rota rejeita o acesso e o JSON não revela registros pessoais. |
-| NFR01-AC01 | Base. Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. | A fronteira recusa acesso ou mantém a ação pendente conforme o caso. A operação indevida não altera estado. |
-| NFR02-AC01 | Base. Comparar estado e resposta da operação em volume isolado. Induzir concorrência quando a funcionalidade tiver disputa de escrita. | Efeito confirmado permanece. A falha é observável e o domínio fica consistente. |
-| NFR03-AC01 | Base. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas. | A evidência não inclui segredos ou objetos de unidades fora da autorização. |
+| NFR01-AC01 | Base: HTTP real. Dado 9101 pertence a QA_A e 9102 a QA_B; quando consultar GET /api/resident/visits?apartment=9102 com QA_A. | Então HTTP 403 APARTMENT_FORBIDDEN e nenhum nome, horário ou autorização de 9102. |
+| NFR02-AC01 | Integração do agente: HTTP real e reinício. Dado QA_VISIT é uma autorização sintética confirmada para QA_A/9101; quando reiniciar visits e agent sem restore e consultar GET /api/resident/visits?apartment=9101 com QA_A. | Então a autorização conserva id, nome, data e horários e não aparece duplicada. |
+| NFR03-AC01 | Base: HTTP real. Dado QA_VISIT_A pertence a QA_A/9101 e QA_VISIT_B a QA_B/9102; quando consultar GET /api/resident/visits?apartment=9101 com QA_A. | Então a lista contém apenas a visita do titular autorizado, sem nome ou id de QA_VISIT_B e sem credenciais. |

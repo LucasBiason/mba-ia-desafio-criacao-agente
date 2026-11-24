@@ -1,4 +1,4 @@
-from services.http_types import AreaId, AreaName, FeeCents
+from aurora_toolkit.http_types import AreaId, AreaName, FeeCents
 from microservice_toolkit.schemas import RequestSchema
 
 

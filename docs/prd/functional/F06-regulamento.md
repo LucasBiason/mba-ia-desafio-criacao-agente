@@ -16,7 +16,7 @@ A referência de produto original é FR06. A correspondência dos critérios ant
 
 - Depende de: F03.
 - Fornece: Conteúdo vigente para o morador e um histórico administrativo com autoria e horário de publicação.
-- Integração: A edição sai do painel autenticado e chega ao domínio. A operação registra na mesma gravação o texto, a versão, a autoridade e o instante. A futura consulta por assunto usa o texto vigente, por meio de uma ferramenta proposta no roteiro.
+- Integração: A edição sai do painel autenticado e chega ao domínio. A operação registra na mesma gravação o texto, a versão, a autoridade e o instante. A consulta por assunto recupera a versão publicada e só entrega o trecho relevante. Se não encontrar regra específica, a resposta informa a limitação sem inventar prazo, multa ou gratuidade. A consulta não executa uma ação.
 
 ## Comportamento esperado
 

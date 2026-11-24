@@ -1,4 +1,4 @@
-# F10 — Compatibilidade e aceite acadêmico
+# F10 — Compatibilidade e aceite do desafio
 
 Domínio: Integração | Onda: 7 | Prioridade: 1
 
@@ -6,9 +6,9 @@ Requisitos não funcionais relacionados: NFR04, NFR01, NFR03
 
 ## Descrição
 
-O modo acadêmico pertence à etapa posterior à integração do assistente. Seus critérios permanecem publicados e ainda não representam a avaliação de fechamento da administração manual.
+A API do assistente está implementada separadamente da base. O aceite integral depende dos 15 passos em clone limpo com Gemini real e publicação do corte aprovado.
 
-Definir a fronteira da API avaliada e os procedimentos para validar o desafio quando a integração de agentes estiver concluída.
+Entregar as seis rotas do enunciado, comandos de restauração e subida e evidência do roteiro completo, preservando as cinco garantias.
 
 Como avaliador, quero executar o protocolo documentado em ambiente local isolado e verificar as garantias pelas rotas e pelos dados.
 
@@ -17,8 +17,8 @@ A referência de produto original é FR10. A correspondência dos critérios ant
 ## Capacidades
 
 - Depende de: F09.
-- Fornece: Contrato de integração, preparação e medição do protocolo acadêmico independente da entrada autenticada do produto.
-- Integração: Um entrypoint dedicado traduz o protocolo acadêmico para a mesma lógica de sessão, reconhecimento de intenções e regras de domínio. O modo fica isolado da composição de produto. O adaptador de verificação acadêmica poderá consultar projeções por apartamento definidas no protocolo. A rede do produto não roteia esses caminhos.
+- Fornece: Contrato de integração, preparação e medição do protocolo do desafio independente da entrada autenticada do produto.
+- Integração: Um entrypoint dedicado traduz o protocolo do desafio para a mesma lógica de sessão, reconhecimento de intenções e regras de domínio. A interface integra o cluster com rede e armazenamento isolados do portal. O adaptador consulta projeções por apartamento definidas no protocolo; o proxy autenticado não roteia esses caminhos.
 
 ## Comportamento esperado
 
@@ -28,7 +28,7 @@ A referência de produto original é FR10. A correspondência dos critérios ant
 
 - **Dado** a composição base do produto é consultada pelo proxy publicado
 - **Quando** consultar rotas locais planejadas na origem do produto e tentar APIs privadas sem bearer
-- **Então** caminhos acadêmicos e rotas internas não contornam a autenticação.
+- **Então** caminhos do assistente e rotas internas não contornam a autenticação.
 
 - **Dado** o fork está em preparação final após a aula
 - **Quando** comparar hashes dos dados, revisar o lock e verificar os links das garantias
@@ -43,7 +43,7 @@ A referência de produto original é FR10. A correspondência dos critérios ant
 | ID | Condição | Resultado esperado | Como verificar |
 | --- | --- | --- | --- |
 | F10-AC01 | Um clone limpo com dependências e chave própria autorizada | O avaliador executa os 15 passos na porta 8000 com o protocolo completo | Seguir o roteiro de partida, restaurar os dados, registrar códigos e observar estado e eventos em cada passo |
-| F10-AC02 | A composição base do produto é consultada pelo proxy publicado | Caminhos acadêmicos e rotas internas não contornam a autenticação | Consultar rotas locais planejadas na origem do produto e tentar APIs privadas sem bearer |
+| F10-AC02 | A composição base do produto é consultada pelo proxy publicado | Caminhos do assistente e rotas internas não contornam a autenticação | Consultar rotas locais planejadas na origem do produto e tentar APIs privadas sem bearer |
 | F10-AC03 | O fork está em preparação final após a aula | Cinco fixtures correspondem à origem e o README identifica provas e trechos implementados | Comparar hashes dos dados, revisar o lock e verificar os links das garantias |
 | F10-AC04 | A base é construída e iniciada com seu comando de demonstração | As cinco fixtures mantêm o mesmo conteúdo entre a cópia e o ambiente inicializado | Conferir os hashes das fixtures antes da partida e depois do teste com volumes isolados |
 
@@ -57,8 +57,8 @@ A etapa de cada prova está identificada na [spec desta funcionalidade](../../sp
 
 ## Fora do escopo
 
-Publicação do fork, instalação de credenciais e execução dos 15 passos dependem da implementação didática do agente. Nenhum acesso sem autenticação é oferecido pelo produto para imitar a avaliação.
+Publicação em produção, pagamentos reais e acesso aos dados do portal pela API do assistente. A publicação do fork pertence à etapa de entrega.
 
 ## Tratamento de erros
 
-Sessão ausente gera 404; decisão sequencial inexistente, consumida ou de outra sessão gera 409 sem alteração. Falha de dependência informa indisponibilidade e preserva estado. A implantação não pode indicar execução do avaliador enquanto o entrypoint estiver ausente.
+Sessão ausente gera 404; decisão sequencial inexistente, consumida ou de outra sessão gera 409 sem alteração. Falha de dependência informa indisponibilidade e preserva estado. O resultado de uma avaliação só pode ser declarado após executar o candidato com as dependências configuradas.

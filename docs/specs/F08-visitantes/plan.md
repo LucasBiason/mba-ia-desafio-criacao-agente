@@ -17,8 +17,8 @@
 
 - Tipo: comportamento.
 - Depende de: SI08.1 e etapa de confirmações de F09.
-- Ações: Acoplar tool contextualizada, validar dia e nome e gravar somente depois da aprovação persistida.
-- Testes: Exercitar confirmação verbal, aprovação, reinício e tentativa de consulta fora da sessão.
+- Ações: Extrair proposta tipada, validar explicitamente operação/nome/data e contexto, vincular a ferramenta fixa ao envelope do turno e criar a pendência idempotente no ledger. Serializar o resultado canônico; gravar a autorização somente depois da aprovação persistida pela rota humana.
+- Testes: Exercitar pedido completo com confirmação verbal na mesma mensagem, em sessão existente com recusas anteriores: exigir pendência e zero autorização. Verificar duplicação de tool, dados inválidos, negação, aprovação, replay 409, reinício e tentativa de consulta fora da sessão; comparar o prefixo do histórico sem apagar eventos.
 - Critérios: F08-AC01, F08-AC02, F08-AC03.
 
 ### SI08.3 — Verificar requisitos transversais
@@ -26,5 +26,5 @@
 - Tipo: comportamento.
 - Depende de: operações descritas nos passos anteriores na etapa de cada critério.
 - Ações: preparar massa descartável e localizar as fronteiras que fornecem a prova para autorizações de visita.
-- Testes: Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. Comparar estado e resposta da operação em volume isolado. Induzir concorrência quando a funcionalidade tiver disputa de escrita. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas.
+- Testes: consultar GET /api/resident/visits?apartment=9102 com QA_A; confirmar que HTTP 403 APARTMENT_FORBIDDEN e nenhum nome, horário ou autorização de 9102; reiniciar visits e agent sem restore e consultar GET /api/resident/visits?apartment=9101 com QA_A; confirmar que a autorização conserva id, nome, data e horários e não aparece duplicada; consultar GET /api/resident/visits?apartment=9101 com QA_A; confirmar que a lista contém apenas a visita do titular autorizado, sem nome ou id de QA_VISIT_B e sem credenciais.
 - Critérios: NFR01-AC01, NFR02-AC01, NFR03-AC01.

@@ -26,5 +26,5 @@
 - Tipo: comportamento.
 - Depende de: operações descritas nos passos anteriores na etapa de cada critério.
 - Ações: preparar massa descartável e localizar as fronteiras que fornecem a prova para reservas e agenda por área.
-- Testes: Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. Comparar estado e resposta da operação em volume isolado. Induzir concorrência quando a funcionalidade tiver disputa de escrita. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas.
+- Testes: consultar GET /api/resident/reservations?apartment=9102 com QA_A; confirmar que HTTP 403 APARTMENT_FORBIDDEN, sem reservas, códigos ou titular de 9102; gerar duas pendências pelo protocolo delegar_solicitacao com operation=reserve e executar_reserva_validada e aprová-las simultaneamente; consultar a agenda e repetir a decisão vencedora; confirmar que existe exatamente uma reserva ativa para área/data, a outra execução informa indisponibilidade e reenvio sequencial retorna 409 sem segundo efeito; consultar GET /api/resident/reservations?apartment=9101 com QA_A e inspecionar o corpo; confirmar que apenas QA_RES_A é retornada; não há QA_RES_B, resident_id alheio, bearer nem segredo.
 - Critérios: NFR01-AC01, NFR02-AC01, NFR03-AC01.

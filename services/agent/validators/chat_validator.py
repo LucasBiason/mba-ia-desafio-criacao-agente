@@ -1,7 +1,7 @@
 from microservice_toolkit import error
 
 from services.apartments.validators.unit_scope_validator import UnitScopeValidator
-from services.permissions import require_resident
+from aurora_toolkit.permissions import require_resident
 
 
 class ChatValidator:

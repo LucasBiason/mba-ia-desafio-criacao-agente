@@ -14,29 +14,46 @@ class AccountController:
     def list(self, actor):
         with AccountRepository() as repository:
             AccountValidator(repository).validate_read(actor)
-            return [AccountSerializer.serialize(account) for account in repository.list()]
+            return [
+                AccountSerializer.serialize(account) for account in repository.list()
+            ]
 
     def get(self, user_id, actor=None):
         with AccountRepository() as repository:
             AccountValidator(repository).validate_read(actor)
-            return AccountSerializer.serialize(AccountValidator(repository).existing(user_id))
+            return AccountSerializer.serialize(
+                AccountValidator(repository).existing(user_id)
+            )
 
     def create(self, data, actor):
         try:
             with AccountRepository() as repository:
                 AccountValidator(repository).validate_create(data, actor)
-                account = Account(id=token_hex(16), name=data.name, email=data.email,
-                                  password_hash=hasher.hash(data.password), role=data.role, active=True)
+                account = Account(
+                    id=token_hex(16),
+                    name=data.name,
+                    email=data.email,
+                    password_hash=hasher.hash(data.password),
+                    role=data.role,
+                    active=True,
+                )
                 return AccountSerializer.serialize(repository.create(account))
         except IntegrityError:
-            raise error(409, "EMAIL_IN_USE", "Este e-mail já está cadastrado.") from None
+            raise error(
+                409, "EMAIL_IN_USE", "Este e-mail já está cadastrado."
+            ) from None
 
     def update(self, user_id, data, actor):
         values = data.model_dump(exclude_unset=True)
         try:
             with AccountRepository() as repository:
-                account = AccountValidator(repository).validate_update(actor, user_id, values)
-                changed_access = values.get("active", account.active) != account.active or "password" in values
+                account = AccountValidator(repository).validate_update(
+                    actor, user_id, values
+                )
+                changed_access = (
+                    values.get("active", account.active) != account.active
+                    or "password" in values
+                )
                 if "password" in values:
                     values["password_hash"] = hasher.hash(values.pop("password"))
                 repository.save(account, values)
@@ -44,4 +61,6 @@ class AccountController:
                     repository.revoke_sessions(user_id)
                 return AccountSerializer.serialize(account)
         except IntegrityError:
-            raise error(409, "EMAIL_IN_USE", "Este e-mail já está cadastrado.") from None
+            raise error(
+                409, "EMAIL_IN_USE", "Este e-mail já está cadastrado."
+            ) from None

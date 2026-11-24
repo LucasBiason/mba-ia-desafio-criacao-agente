@@ -26,5 +26,5 @@
 - Tipo: comportamento.
 - Depende de: operações descritas nos passos anteriores na etapa de cada critério.
 - Ações: preparar massa descartável e localizar as fronteiras que fornecem a prova para cadastro de áreas comuns.
-- Testes: Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. Comparar estado e resposta da operação em volume isolado. Induzir concorrência quando a funcionalidade tiver disputa de escrita.
+- Testes: enviar PATCH /api/admin/areas/{QA_AREA} com fee_cents=200 usando QA_A e reler como QA_ADMIN; confirmar que HTTP 403 e taxa original 100 preservada; reiniciar common-areas e condo-db sem restore e consultar GET /api/admin/areas/{QA_AREA}; confirmar que HTTP 200 com o mesmo id, nome e taxa 100, sem segunda área.
 - Critérios: NFR01-AC01, NFR02-AC01.

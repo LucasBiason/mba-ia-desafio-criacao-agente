@@ -33,7 +33,7 @@ Vamos autenticar com JWT, verificar sessão ativa na autoridade de identidade e 
 
 - Positiva: Revogação e mudanças de acesso produzem efeito nas APIs dependentes.
 - Negativa: A disponibilidade da identidade condiciona as operações privadas e adiciona uma chamada interna.
-- Neutra: O esquema vigente expõe admin e resident; a migração converte o papel superuser legado em admin, preservando IDs e credenciais.
+- Neutra: O esquema do produto expõe admin e resident. O bootstrap cria estruturas ausentes e as contas iniciais de um banco novo; não executa conversão de papéis ou alteração de schema existente.
 
 ### Confirmação
 

@@ -26,5 +26,5 @@
 - Tipo: comportamento.
 - Depende de: operações descritas nos passos anteriores na etapa de cada critério.
 - Ações: preparar massa descartável e localizar as fronteiras que fornecem a prova para gestão de usuários e perfis.
-- Testes: Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas.
+- Testes: enviar PATCH /api/admin/users/{QA_USER} com active=false usando QA_A e consultar a conta como QA_ADMIN; confirmar que HTTP 403 e conta preservada ativa; consultar GET /api/admin/users e GET /api/auth/me como QA_A; confirmar que projeções excluem password_hash e registros de login; me retorna somente QA_A sem dados de QA_B.
 - Critérios: NFR01-AC01, NFR03-AC01.

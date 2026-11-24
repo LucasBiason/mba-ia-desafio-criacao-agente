@@ -1,6 +1,6 @@
 from microservice_toolkit import error
 
-from services.permissions import require_admin
+from aurora_toolkit.permissions import require_admin
 
 
 class AreaValidator:
@@ -14,8 +14,13 @@ class AreaValidator:
     def validate_create(self, data, actor):
         require_admin(actor)
 
-        if self.repository.get(data.id) is not None or self.repository.named_area(data.name) is not None:
-            raise error(409, "AREA_EXISTS", "Já existe uma área com esse identificador ou nome.")
+        if (
+            self.repository.get(data.id) is not None
+            or self.repository.named_area(data.name) is not None
+        ):
+            raise error(
+                409, "AREA_EXISTS", "Já existe uma área com esse identificador ou nome."
+            )
 
     def validate_update(self, area_id, data, actor):
         area = self.existing(area_id, actor)

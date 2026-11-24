@@ -1,6 +1,6 @@
 from microservice_toolkit import error
 
-from services.permissions import require_admin
+from aurora_toolkit.permissions import require_admin
 from services.apartments.validators.unit_scope_validator import UnitScopeValidator
 
 
@@ -17,8 +17,16 @@ class ReservationValidator:
     def validate_hours(self, code, data, actor):
         require_admin(actor)
         if not (data.start_time is None and data.end_time is None):
-            if data.start_time is None or data.end_time is None or data.start_time >= data.end_time:
-                raise error(422, "INVALID_RESERVATION_HOURS", "Informe início e fim em ordem crescente.")
+            if (
+                data.start_time is None
+                or data.end_time is None
+                or data.start_time >= data.end_time
+            ):
+                raise error(
+                    422,
+                    "INVALID_RESERVATION_HOURS",
+                    "Informe início e fim em ordem crescente.",
+                )
         record = self.repository.get(code)
         if record is None:
             raise error(404, "RESERVATION_NOT_FOUND", "Reserva não encontrada.")

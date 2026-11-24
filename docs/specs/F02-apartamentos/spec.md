@@ -15,7 +15,7 @@ A intenção de produto, as regras e os marcos de aceite vêm do [requisito F02]
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal com assistente e API do assistente. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
@@ -61,5 +61,5 @@ A tabela `apartments` guarda `id` e `number`. A relação `apartment_residents` 
 | F02-AC04 | Base. Tentar DELETE sobre unidade de fixture com dependência e consultar a unidade e a agenda. | A exclusão é bloqueada e o histórico fica disponível. |
 | F02-AC05 | Base. Conferir usuários e apartamentos importados e consultar uma unidade de teste após renumerá-la. | A carga associa o usuário morador da fonte à unidade, e o código da unidade editada se mantém após alterar o número. |
 | F02-SEC01 | Base. Comparar GET de unidades do morador a duas unidades administrativas. | A consulta pessoal não devolve unidades de outras contas. |
-| NFR01-AC01 | Base. Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. | A fronteira recusa acesso ou mantém a ação pendente conforme o caso. A operação indevida não altera estado. |
-| NFR03-AC01 | Base. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas. | A evidência não inclui segredos ou objetos de unidades fora da autorização. |
+| NFR01-AC01 | Base: HTTP real. Dado QA_A autenticado como resident e apartamento 9101 vinculado a QA_A; quando enviar PATCH /api/admin/apartments/9101 com number=9199 usando QA_A e consultar 9101 como QA_ADMIN. | Então PATCH retorna 403 e a consulta administrativa conserva número e vínculo originais. |
+| NFR03-AC01 | Base: HTTP real. Dado 9101 pertence a QA_A e 9102 a QA_B; quando consultar GET /api/resident/apartments com QA_A e inspecionar resposta e log sanitizado. | Então lista contém 9101, não contém 9102 nem campos password_hash, credenciais ou bearer. |

@@ -6,19 +6,19 @@ Requisitos não funcionais relacionados: NFR01, NFR02, NFR03
 
 ## Descrição
 
-Nesta entrega administrativa, o escopo é consulta da agenda e das reservas e edição dos horários. Criação, cobrança, confirmação e cancelamento pelo agente são a etapa posterior.
+A base cobre consulta e horários. O assistente permite consultar disponibilidade por área e data, reservar e cancelar a reserva própria. Cobrança positiva exige decisão externa; não há execução de pagamento.
 
 Consultar reservas em um calendário por área, localizar pelo código e registrar horários. Criar e cancelar reservas no fluxo de integração.
 
-Como morador, quero consultar reservas da unidade selecionada e depois aprender a solicitar reservas e cancelamentos pelo assistente.
+Como morador, quero consultar reservas da unidade selecionada e solicitar reservas e cancelamentos pelo assistente.
 
 A referência de produto original é FR07. A correspondência dos critérios anteriores é F07-AC01 ↔ FR07/AC01, F07-AC02 ↔ FR07/AC02, F07-AC03 ↔ FR07/AC03, F07-AC04 ↔ FR07/AC04. Critérios adicionais descrevem verificações específicas desta separação de etapas.
 
 ## Capacidades
 
 - Depende de: F02, F05.
-- Fornece: Projeção de agenda consumida pela interface e contrato de operações futuras com identidade e efeito controlados.
-- Integração: O painel chama a API autenticada e usa filtros por área, data e estado. A interface do morador envia somente a unidade selecionada. A API verifica vínculo em cada leitura. O agente e as futuras tools recebem o contexto autenticado do servidor e executam regras do domínio antes de gravar.
+- Fornece: Projeção de agenda consumida pela interface e operações com identidade e efeito controlados.
+- Integração: O painel chama a API autenticada e usa filtros por área, data e estado. A interface do morador envia somente a unidade selecionada. A API verifica vínculo em cada leitura. O agente e as tools recebem o contexto autenticado do servidor e executam regras do domínio antes de gravar.
 
 ## Comportamento esperado
 
@@ -71,4 +71,4 @@ Criação e cancelamento administrativos, divisão da data em vários intervalos
 
 ## Tratamento de erros
 
-A API recusa unidade fora do vínculo sem expor dados. A futura disputa devolve indisponibilidade sem identificar o vencedor. Falha de persistência não confirma efeito.
+A API recusa unidade fora do vínculo sem expor dados. A disputa devolve indisponibilidade sem identificar o vencedor. Falha de persistência não confirma efeito.

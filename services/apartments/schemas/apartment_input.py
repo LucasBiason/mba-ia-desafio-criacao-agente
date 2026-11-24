@@ -1,5 +1,5 @@
 from pydantic import field_validator
-from services.http_types import AccountId, ApartmentNumber
+from aurora_toolkit.http_types import AccountId, ApartmentNumber
 from microservice_toolkit.schemas import RequestSchema
 
 

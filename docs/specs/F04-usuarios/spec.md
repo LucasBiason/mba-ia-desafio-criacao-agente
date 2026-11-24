@@ -15,7 +15,7 @@ A intenção de produto, as regras e os marcos de aceite vêm do [requisito F04]
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal com assistente e API do assistente. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
@@ -25,7 +25,7 @@ CRUD de contas passa pelo proxy e chega a `users`. A API resolve a identidade e 
 
 Decisões arquiteturais relacionadas: [ADR-0002](../../adr/ADR-0002-orm-e-integridade-transacional.md), [ADR-0003](../../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md).
 
-Manter contas desativadas para preservar vínculos. Usuários `admin` gerenciam perfis `admin` e `resident`. O papel é escolhido no cadastro e fica fixo, preservando a elegibilidade do responsável pelo apartamento. A criação usa email normalizado e único, com rollback na criação concorrente da mesma chave. Alterações de estado preservam pelo menos uma conta administrativa ativa. Mudar senha ou estado revoga as sessões da conta afetada. A migração converte papéis administrativos legados preservando os IDs e credenciais.
+Manter contas desativadas para preservar vínculos. Usuários `admin` gerenciam perfis `admin` e `resident`. O papel é escolhido no cadastro e fica fixo, preservando a elegibilidade do responsável pelo apartamento. A criação usa email normalizado e único, com rollback na criação concorrente da mesma chave. Alterações de estado preservam pelo menos uma conta administrativa ativa. Mudar senha ou estado revoga as sessões da conta afetada. O esquema do produto admite os papéis admin e resident; a preparação cria somente estruturas ausentes e contas iniciais em banco novo.
 
 ## 4. Visão de componentes
 
@@ -42,7 +42,7 @@ As schemas Pydantic validam tipo e formato. Validators não gravam e controllers
 
 ## 5. Contratos de interface
 
-GET e POST em `/api/admin/users`. O cadastro recebe `name`, `email`, `password` e `role`. PATCH `/api/admin/users/{id}` atualiza os campos permitidos, incluindo `active`. A senha nova tem entre 12 e 256 caracteres. GET por ID devolve a projeção permitida. A resposta expõe `id`, `name`, `email`, `role` e `active`. O perfil do usuário corrente vem de `/api/auth/me`.
+GET e POST em `/api/admin/users`. O cadastro recebe `name`, `email`, `password` e `role`. PATCH `/api/admin/users/{id}` atualiza os campos permitidos, incluindo `active`. A senha nova tem entre 12 e 256 caracteres. GET por ID devolve a projeção permitida. A resposta expõe `id`, `name`, `email`, `role` e `active`. O perfil do usuário corrente vem de `/api/auth/me`. GET `/internal/users/{user_id}` retorna a mesma projeção pública para composição de vínculos entre serviços; exige `X-Aurora-Internal-Token`, fica fora do proxy público e responde 404 USER_NOT_FOUND para ID ausente. O token interno autoriza a consulta de serviço e não substitui a autorização do operador final.
 
 Email duplicado causa conflito. Campo inválido retorna mensagem por campo. Alterar o papel fixado no cadastro retorna 409 ROLE_IMMUTABLE e deixa a conta original intacta. Operador sem papel administrativo recebe 403 antes da alteração. Conta desativada perde acesso validado.
 
@@ -62,5 +62,5 @@ A conta contém um identificador estável, chave de email única, nome, papel, e
 | F04-AC03 | Base. Pedir lista administrativa e perfil próprio e inspecionar apenas a identidade autenticada. | A resposta não inclui registros alheios. |
 | F04-AC04 | Base. Atualizar uma conta criada para o teste, repetir email em segunda conta, desativar e reapresentar token. | Edição persiste e a desativação invalida o acesso; duplicidade é rejeitada. |
 | F04-SEC01 | Base. Inspecionar respostas válidas e de erro com credenciais descartáveis. | O JSON e a evidência não incluem senha ou hash. |
-| NFR01-AC01 | Base. Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável. | A fronteira recusa acesso ou mantém a ação pendente conforme o caso. A operação indevida não altera estado. |
-| NFR03-AC01 | Base. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas. | A evidência não inclui segredos ou objetos de unidades fora da autorização. |
+| NFR01-AC01 | Base: HTTP real. Dado QA_A é resident e QA_USER é uma conta administrativa criada para o teste; quando enviar PATCH /api/admin/users/{QA_USER} com active=false usando QA_A e consultar a conta como QA_ADMIN. | Então HTTP 403 e conta preservada ativa. |
+| NFR03-AC01 | Base: HTTP real. Dado QA_ADMIN lista usuários sintéticos QA_A e QA_B; quando consultar GET /api/admin/users e GET /api/auth/me como QA_A. | Então projeções excluem password_hash e registros de login; me retorna somente QA_A sem dados de QA_B. |

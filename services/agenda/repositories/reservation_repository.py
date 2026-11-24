@@ -6,15 +6,24 @@ from services.common_areas.models.area import Area
 
 
 class ReservationRepository(UnitScopeRepository):
-    def list(self, *, area_id=None, day=None, status=None, apartment=None, resident_id=None):
-        query = select(Reservation, Area.name).join(Area, Area.id == Reservation.area_id)
+    def list(
+        self, *, area_id=None, day=None, status=None, apartment=None, resident_id=None
+    ):
+        query = select(Reservation, Area.name).join(
+            Area, Area.id == Reservation.area_id
+        )
         for column, value in [
-            (Reservation.area_id, area_id), (Reservation.date, day), (Reservation.status, status),
-            (Reservation.apartment, apartment), (Reservation.resident_id, resident_id),
+            (Reservation.area_id, area_id),
+            (Reservation.date, day),
+            (Reservation.status, status),
+            (Reservation.apartment, apartment),
+            (Reservation.resident_id, resident_id),
         ]:
             if value is not None:
                 query = query.where(column == value)
-        return self.session.execute(query.order_by(Reservation.date, Reservation.code)).all()
+        return self.session.execute(
+            query.order_by(Reservation.date, Reservation.code)
+        ).all()
 
     def get(self, code):
         return self.session.get(Reservation, code, with_for_update=True)

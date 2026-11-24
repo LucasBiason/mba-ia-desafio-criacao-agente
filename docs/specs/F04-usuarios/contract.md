@@ -2,7 +2,11 @@
 
 ## Pré-requisitos
 
-Prepare uma composição isolada e uma massa de dados de demonstração. No cenário de base, use o processo de inicialização do README e registre revisão, resposta e resultado observado. No cenário de aula ou de avaliação, verifique antes a disponibilidade das ferramentas, sessão persistida e credencial de execução externa autorizada. Os dados de origem permanecem intactos.
+Use um projeto Compose exclusivo de QA e volumes novos, sem publicar sobre 8770/8000 já ocupados. Registre revisão e nomes dos recursos adquiridos; credenciais ficam somente no ambiente privado do executor. Nunca use o cluster pessoal nem altere os cinco arquivos de `dados/`. O bootstrap explícito deve terminar antes de HTTP.
+
+Handles do cenário: `QA_ADMIN` é a conta administrativa de demonstração autenticada; por POST `/api/admin/users`, crie `QA_A` e `QA_B` como residents ativos com emails sintéticos distintos e retenha os IDs e bearers somente em memória. Por POST `/api/admin/apartments`, crie `9101`→QA_A e `9102`→QA_B; `QA_AREA` é a área `qa-area` criada em POST `/api/admin/areas` com taxa 100. Capture IDs retornados em vez de supor IDs internos. `QA_DAY` é uma data futura livre escolhida após consulta da agenda. `QA_RES_A`, `QA_RES_B` e `QA_VISIT` são códigos/IDs retornados pelas ações confirmadas na integração quando o cenário os utiliza; nomes de visitantes são sintéticos. `QA_SESSION_A` e `QA_PENDING` são IDs retornados pela abertura de sessão e pela pendência original. Cenários acadêmicos usam separadamente `QA_SESSION` retornado por POST `/sessoes` com apartamento 101; não reutilizam JWT ou dados do portal.
+
+A massa de cada item é preparada novamente em volume descartável para não depender do item anterior. Para casos de navegador use contextos separados para QA_ADMIN, QA_A e QA_B; desktop 1280×900 e celular 390×844. Ao terminar ou falhar, feche os contextos e remova exclusivamente contêineres, rede e volumes do projeto QA registrado, sem executar restore no ambiente pessoal. Provas externas guardam status, campos permitidos, contagens e hashes; não publicam senha ou bearer. A preparação descreve o ensaio e não concede execução ou aceite humano.
 
 ## Itens
 
@@ -11,8 +15,8 @@ Prepare uma composição isolada e uma massa de dados de demonstração. No cen�
 - **E2E-F04-03** (P0D, cobre F04-AC03) — Um morador com sessão válida tenta acessar outro perfil ou a lista administrativa. Pedir lista administrativa e perfil próprio e inspecionar apenas a identidade autenticada -> A resposta não inclui registros alheios. Modo: Base.
 - **E2E-F04-04** (P0D, cobre F04-AC04) — Uma conta existente. Atualizar uma conta criada para o teste, repetir email em segunda conta, desativar e reapresentar token -> Edição persiste e a desativação invalida o acesso; duplicidade é rejeitada. Modo: Base.
 - **E2E-F04-05** (P0D, cobre F04-SEC01) — Cadastro, edição e erro de duplicidade. Inspecionar respostas válidas e de erro com credenciais descartáveis -> O JSON e a evidência não incluem senha ou hash. Modo: Base.
-- **E2E-F04-06** (P0D, cobre NFR01-AC01) — Token ou papel inadequado, acesso fora do vínculo ou ação sensível sem decisão. Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável -> A fronteira recusa acesso ou mantém a ação pendente conforme o caso. A operação indevida não altera estado. Modo: Base.
-- **E2E-F04-07** (P0D, cobre NFR03-AC01) — Operação privada bem-sucedida ou recusada. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas -> A evidência não inclui segredos ou objetos de unidades fora da autorização. Modo: Base.
+- **E2E-F04-06** (P0D, cobre NFR01-AC01) — Dado QA_A é resident e QA_USER é uma conta administrativa criada para o teste; quando enviar PATCH /api/admin/users/{QA_USER} com active=false usando QA_A e consultar a conta como QA_ADMIN -> Então HTTP 403 e conta preservada ativa. Modo: Base: HTTP real.
+- **E2E-F04-07** (P0D, cobre NFR03-AC01) — Dado QA_ADMIN lista usuários sintéticos QA_A e QA_B; quando consultar GET /api/admin/users e GET /api/auth/me como QA_A -> Então projeções excluem password_hash e registros de login; me retorna somente QA_A sem dados de QA_B. Modo: Base: HTTP real.
 
 ## Cobertura
 

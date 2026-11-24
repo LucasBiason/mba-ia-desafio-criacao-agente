@@ -1,142 +1,208 @@
 # Arquitetura — Residencial Aurora
 
-> Estado: arquitetura implementada da base administrativa; revisão de fechamento em andamento.
-> Escopo: administração manual, consultas autenticadas e fronteira já existente; arquitetura interna do agente será definida posteriormente.
-> Fontes: [PRD](../prd/index.md), [Compose](../../compose.yaml) e [specs](../specs/index.md).
+> Estado: descrição da implementação; aceite funcional e humano definido pelos contratos das features.
+> Escopo: portal autenticado, serviços de domínio, assistente e API do assistente.
+> Fontes: [PRD](../prd/index.md), [composição](../../configs/compose.yaml), [specs](../specs/index.md) e [ADRs](../adr/README.md).
 
 ## 1. Objetivo e limites
 
-Organizar as APIs em serviços com responsabilidade explícita e camadas verificáveis. Cada operação percorre router, controller, validators, repository ORM e serializer, após autenticação pelo middleware. Os contratos HTTP usados pelo frontend são preservados. A implementação da consultoria ADK/Gemini e o adaptador acadêmico de F10 continuam pendentes.
+O sistema atende à gestão do Residencial Aurora e ao desafio de assistência para reservas, visitas e regulamento. Administração e moradores usam o portal autenticado; o avaliador usa as seis rotas do assistente. As superfícies mantêm dados separados. Esta visão orienta desenvolvimento e revisão; os contratos de entrada, saída e aceite ficam nas specs F01–F14.
+
+O modelo interpreta a intenção e escolhe ferramentas. Identidade, apartamento da sessão, validação, confirmação, persistência e exclusividade são responsabilidades do servidor e do armazenamento. Pagamentos reais, publicação em produção e garantias de compreensão universal do modelo ficam fora do escopo.
 
 ## 2. Arquitetura geral
 
-As visões [C1 e C2](c4-context.md) distinguem o limite do sistema das aplicações executáveis. O [modelo conceitual](data-model.md) detalha identidades, cardinalidades e histórico. O blueprint do agente e uma eventual fila não integram a topologia decidida desta etapa.
+Um único manifesto, `configs/compose.yaml`, compõe o frontend React/Nginx, oito APIs FastAPI de produto, seus bancos, preparadores de dados e a entrada do assistente com duas réplicas do agente e gateway local. Cada serviço possui Dockerfile e entrypoint. O manifesto Python e `uv.lock` ficam na raiz como metadados de distribuição; `infra/python/pyproject.toml` contém somente as regras Ruff; a configuração privada fica em `configs/.env`.
 
-O portal React é servido pelo Nginx, que encaminha cada recurso ao serviço proprietário. Há oito aplicações FastAPI independentes, dois bancos PostgreSQL e o frontend. O toolkit configura infraestrutura HTTP, enquanto cada aplicação define seu domínio.
+O portal acessa as APIs pela mesma origem. A identidade usa PostgreSQL próprio; os domínios de condomínio compartilham o banco de condomínio e mantêm seus repositories. Sessões/eventos ADK possuem persistência dedicada. A API do assistente usa PostgreSQL separado dos dados do portal.
 
-As aplicações e os armazenamentos estão na visão [C2](c4-context.md#c2-aplicações-e-persistência).
-
-Os serviços de condomínio compartilham inicialmente o banco existente para preservar IDs, constraints e histórico. Cada repository escreve somente nos modelos do seu domínio. Projeções autorizadas podem consultar vínculos e catálogos necessários no mesmo banco. Separar fisicamente esses bancos exigirá contratos de integração e uma migração própria.
+As [visões C1/C2](c4-context.md) mostram atores, processos e armazenamentos. O ADR-0006 define os dois bancos do portal, o SQLite ADK dedicado e o PostgreSQL isolado do assistente.
 
 ## 3. Componentes e responsabilidades
 
-| Serviço | Responsabilidade | Camadas |
-| --- | --- | --- |
-| authentication | Login, sessão JWT, introspecção e saída | services/authentication |
-| users | Contas, perfis e última administração ativa | services/users |
-| apartments | Unidades, códigos estáveis e responsáveis | services/apartments |
-| common_areas | Áreas comuns e taxas | services/common_areas |
-| agenda | Agenda, consultas de reservas e horários | services/agenda |
-| visits | Autorizações existentes e horários de visita | services/visits |
-| settings | Regulamento vigente e versões imutáveis | services/settings |
-| agent | Sessões do morador e fronteira da consultoria | services/agent |
+| Componente | Responsabilidade | Fronteira e dependências | Fonte |
+| --- | --- | --- | --- |
+| Frontend | Navegação, painéis, cadastros, agenda e chat | HTTP pela origem do Nginx | services/frontend |
+| authentication | Login, JWT, sessão revogável e introspecção | Banco de identidade; contrato interno | services/authentication |
+| users | Contas, perfis e última administração ativa | Banco de identidade | services/users |
+| apartments | Unidades, códigos e responsáveis | Banco de condomínio; projeção interna de usuários | services/apartments |
+| common_areas | Áreas, taxas e referências históricas | Banco de condomínio | services/common_areas |
+| agenda | Reservas, disponibilidade e horários | Exclusividade no banco de condomínio | services/agenda |
+| visits | Autorizações de visita e horários | Banco de condomínio | services/visits |
+| parameters | Regulamento vigente e revisões | Banco de condomínio | services/parameters |
+| agent | Sessões, contexto, histórico, ferramentas e especialistas | Identidade, domínios e ADK/Gemini | services/agent |
+| API do assistente | Contrato do avaliador, confirmação e projeções | Réplicas isoladas e PostgreSQL do assistente | services/agent/api |
+| microservice-toolkit | Aplicação, middleware, erros, logs, health e ORM | Infraestrutura sem regras do residencial | infra/packages/microservice-toolkit |
+| aurora-toolkit | Tipos, permissões, identidade e convenções do cluster | Contratos próprios do produto | infra/packages/aurora-toolkit |
 
-Cada diretório contém main, routers, controllers, validators, repositories, models, schemas e serializers. main apenas compõe a aplicação. services/persistence fornece a base ORM e o repositório de migração. O pacote microservice-toolkit fornece o ciclo transacional, o factory HTTP, logs, autenticação configurável e erros.
+As APIs de negócio usam routers, controllers, validators, repositories, models, schemas e serializers. O toolkit genérico fornece a infraestrutura; as regras e os modelos pertencem aos serviços. A API do assistente aplica o mesmo fluxo de camadas às seis rotas do enunciado, com models declarativos e repositories ORM transacionais para SQLite e PostgreSQL.
 
 ## 4. Fluxos de requisições e dados
 
-~~~mermaid
+```mermaid
 ---
-title: Requisição privada, identidade e integridade
+title: Residencial Aurora — architecture 1
 ---
 sequenceDiagram
-    actor U as Usuário
+    actor U as Usuário do portal
+    participant G as Gateway
     participant M as Middleware
     participant A as Autenticação
-    participant R as Router
-    participant C as Controller
-    participant V as Validator
-    participant P as Repository ORM
-    participant S as Serializer
-    U->>M: Request com bearer
-    M->>A: Introspecção por HTTP interno
-    alt Sessão inválida ou dependência indisponível
-        A-->>M: Recusa ou falha de dependência
-        M-->>U: 401 ou 503, sem executar a operação
+    participant C as Router e controller
+    participant V as Validators
+    participant R as Repository ORM
+    U->>G: HTTP com bearer
+    G->>M: Rota de domínio
+    M->>A: Introspecção interna
+    alt Identidade recusada ou indisponível
+        M-->>U: 401 ou 503 sem executar operação
     else Identidade válida
-        A-->>M: Conta e papel confiáveis
-        M->>R: Request com identidade
-        R->>C: DTO e contexto autenticado
-        C->>V: Validar permissão e regras
-        V->>P: Consultar estado e vínculos
-        P-->>V: Estado persistido
-        alt Regra ou permissão recusada
-            V-->>C: Erro de domínio
-            C-->>R: Recusa sem gravação
-            R-->>U: 403, 404 ou 422
-        else Operação permitida
-            V-->>C: Validação concluída
-            C->>P: Persistir o modelo em transação
-            alt Colisão ou falha de persistência
-                P-->>C: Rollback
-                C-->>R: Conflito ou indisponibilidade
-                R-->>U: 409 ou 503
-            else Persistência confirmada
-                P-->>C: Objeto ORM
-                C->>S: Serializar campos públicos
-                S-->>C: DTO de saída
-                C-->>R: Resultado tipado
-                R-->>U: Response HTTP
-            end
+        M->>C: DTO e identidade verificada
+        C->>V: Autorizar ação e validar dados
+        V->>R: Consultar vínculos e estado
+        C->>R: Executar unidade transacional
+        alt Conflito ou falha de persistência
+            R-->>C: Rollback e erro de domínio
+        else Operação confirmada
+            R-->>C: Resultado para serialização
+        end
+        C-->>U: DTO público ou erro seguro
+    end
+```
+
+No portal, o principal extrai a intenção do pedido atual por `delegar_solicitacao`. O servidor valida o DTO, fixa identidade/unidade e determina o especialista por mapa de operações. Reservas e convivência possuem, cada um, uma ferramenta executora sem argumentos; ela consome somente o envelope validado daquela sessão e turno. Respostas antigas do assistente não são fatos de autorização. O transcript permanece persistido e visível conforme a projeção pública.
+
+```mermaid
+---
+title: Residencial Aurora — delegação no portal
+---
+sequenceDiagram
+    actor M as Morador autenticado
+    participant H as Controller e admissão
+    participant P as Principal ADK
+    participant V as Validação e despacho
+    participant E as Especialista ADK
+    participant D as Domínio e ledger ORM
+    M->>H: Mensagem na sessão própria
+    H->>H: Revalidar titular, unidade e orçamento
+    H->>P: Pedido atual e contexto autorizado
+    P->>V: delegar_solicitacao com DTO
+    V->>V: Validar e vincular envelope ao turno
+    alt Protocolo inválido ou dados insuficientes
+        V-->>H: Falha identificável ou esclarecimento sem efeito
+        H-->>M: Resposta canônica
+    else Pedido válido
+        V->>E: Transferir para destino calculado
+        E->>D: Executor sem argumentos
+        D->>D: Revalidar regras e executar uma vez
+        alt Reserva paga ou visita
+            D-->>H: Pendência com detalhes originais
+            H-->>M: Cartão para decisão
+            M->>D: Aprovar ou negar pela rota humana
+            D->>D: Consumir pendência e aplicar decisão atômica
+            D-->>M: Recibo durável
+        else Consulta, reserva gratuita ou cancelamento
+            D-->>H: Resultado canônico do domínio
+            H-->>M: Resposta e recibo público
         end
     end
-~~~
+```
 
-Controllers não executam SQL. Validators não escrevem no banco. Repositories abrangem a transação e convertem alterações de objetos em persistência ORM. Constraints e locks mantêm as invariantes sob concorrência.
+As ferramentas de reservas consultam disponibilidade e reservas próprias e executam criação/cancelamento. Convivência trata visitas e regulamento. O backend produz a resposta a partir do resultado real; dados incompletos pedem esclarecimento e falha do protocolo retorna indisponibilidade sem efeito. Chamadas repetidas do executor recuperam o mesmo resultado do turno. A chave estável de proposta reutiliza a PK do ledger, sem novo schema ou DDL na partida HTTP. Não há transação de banco aberta durante chamadas ao modelo. O [ADR-0009](../adr/ADR-0009-delegacao-tipada-e-recibos-do-servidor.md) e a [spec F09](../specs/F09-chat-agente/spec.md#protocolo-interno-de-delegação) definem os contratos.
+
+O fluxo seguinte descreve separadamente a API do assistente usada pelo avaliador.
+
+```mermaid
+---
+title: Residencial Aurora — architecture 2
+---
+sequenceDiagram
+    actor C as Cliente do assistente
+    participant API as API do assistente
+    participant ADK as Principal e especialista ADK
+    participant DB as Persistência do assistente
+    C->>API: Mensagem em sessão existente
+    API->>DB: Resolver apartamento fixo e serializar turno
+    API->>ADK: Executar a intenção no contexto da sessão
+    alt Ação exige aprovação
+        ADK-->>API: Solicitação de confirmação
+        API->>DB: Persistir pendência e invocação
+        API-->>C: ID, ação e detalhes
+        C->>API: Decisão na rota de confirmações
+        API->>ADK: Retomar invocação original
+    end
+    ADK->>DB: Aplicar regra, efeito e recibo durável
+    DB-->>ADK: Resultado ou conflito de disponibilidade
+    ADK-->>C: Resposta e pendências restantes
+```
+
+A confirmação referencia o item original persistido; um “sim” no chat não substitui a decisão da rota. Negar não grava o efeito. Unicidade, consumo único e recibos duráveis protegem concorrência e repetição. O regulamento é consultado por artigo pertinente, sem incluir o documento integral no prompt principal.
+
+A composição autenticada possui ledger de confirmação no banco de condomínio. Os efeitos locais fornecidos pelos domínios usam a mesma transação; isso não representa atomicidade distribuída por HTTP. Um desenho de outbox/inbox entre serviços exige decisão e contrato próprios.
 
 ## 5. Modelo de dados conceitual
 
-Conta e sessão de login pertencem à identidade. O código interno da unidade é estável e seu número é único. Uma relação associa no máximo um responsável a cada unidade. Uma conta pode responder por várias unidades. Reservas e autorizações preservam o titular original após uma troca de responsável.
+O [modelo conceitual](data-model.md) descreve conta, unidade, responsabilidade, área, reserva, autorização, revisão do regulamento, sessão e confirmação. Trocar o responsável não transfere a titularidade histórica das reservas ou visitas. Uma área aceita uma única reserva ativa por data; cancelar conserva o código histórico.
 
-O [ER conceitual](data-model.md) representa as cardinalidades e explicita as relações lógicas entre bancos.
-
-O regulamento tem versão zero importada e versões posteriores com conteúdo, autor e horário. Reservas ativas têm exclusividade de área e data. Horários opcionais respeitam os intervalos validados. Os modelos SQLAlchemy mantêm nomes e chaves das tabelas existentes.
+Sessões, eventos e decisões sobrevivem ao reinício. O portal e a API do assistente usam armazenamentos separados, com as fixtures originais preservadas.
 
 ## 6. Interfaces e integrações
 
-As rotas públicas do portal conservam os caminhos de F01–F14. Nginx encaminha usuários, apartamentos, áreas, reservas, visitas, configurações e chat aos respectivos serviços. A introspecção e a consulta interna de usuários exigem credencial de serviço e permanecem fora do proxy público.
+O portal publica `/api` com autenticação e autorização por papel e recurso. Os caminhos internos de identidade e agente não são publicados pelo gateway. Swagger e OpenAPI dos serviços ficam em `/services/NOME/docs` e `/services/NOME/openapi.json`.
 
-Cada aplicação expõe /health pelo toolkit e /docs e /openapi.json por FastAPI. A prontidão consulta o banco pelo HealthRepository. As páginas Swagger ficam acessíveis em /services/auth/docs, /services/users/docs, /services/apartments/docs, /services/common-areas/docs, /services/agenda/docs, /services/visits/docs, /services/settings/docs e /services/agent/docs.
+A entrada do assistente está vinculada ao loopback na porta 8000 e oferece as seis rotas de F10: sessão, mensagem, confirmação, eventos, reservas e visitantes. Ela não autentica o avaliador e não encaminha operações para o banco do portal. Sua fronteira de confiança e exposição são diferentes das APIs autenticadas.
+
+Google ADK 2.14.1 coordena a execução e o serviço de sessão persistente. Gemini usa o transporte Google AI Studio configurado por ambiente. Modelos injetados pertencem exclusivamente aos testes unitários. Segredos não integram imagens, fixtures, documentos, eventos públicos ou logs.
 
 ## 7. Escala e disponibilidade
 
-A execução alvo é Docker Compose local. Não há meta aprovada de carga ou disponibilidade de produção. A consulta de identidade é síncrona e sua falha bloqueia APIs privadas. Repositories têm sessões por operação, rollback e fechamento garantidos. Readiness cria uma sessão nova por verificação.
+O alvo é um cluster Compose local, sem SLA ou capacidade numérica de produção aprovados. As réplicas do assistente compartilham o PostgreSQL, que coordena turno, confirmação e exclusividade. As verificações unitárias com armazenamento injetado não certificam por si só as réplicas PostgreSQL ou Gemini.
+
+A indisponibilidade da identidade bloqueia APIs privadas. Falhas do modelo tornam a conversa indisponível sem conceder um efeito. O banco decide a disputa pela reserva; uma fila de processamento não substitui a restrição de exclusividade.
 
 ## 8. Segurança e privacidade
 
-O middleware autentica e os validators autorizam ações e recursos. Schemas validam formato e limites antes do controller. Serializers e response_model delimitam a saída pública. Senhas são armazenadas com Argon2 e nunca são devolvidas pelo serializer.
+O middleware autentica; validators autorizam ações e recursos. Schemas limitam os dados recebidos e serializers delimitam a saída pública. Senhas usam derivação Argon2. Desativação de conta ou mudança de vínculo deve ser verificada antes de uma operação privada.
 
-Logs registram serviço, método, template de rota, status, duração e correlação. Erros inesperados não revelam payloads ou traceback. Os modelos preservam constraints de integridade, a última administração ativa e a titularidade histórica.
+A admissão persistente reserva a execução por sessão, morador e global antes de criar o modelo ou chamar o provedor. A consulta de histórico usa projeção persistente paginada por cursor, com limite na consulta ORM; não carrega todos os eventos ADK para cortar a resposta depois.
+
+O portal apresenta uma única conversa contínua por titular e unidade, com histórico recuperado automaticamente e compositor no rodapé, sem gerenciador de conversas. Sessões autorizadas compõem a mesma linha do tempo. A sessão de chat fixa usuário e unidade. As tools revalidam elegibilidade e não aceitam apartamento livre escolhido pelo modelo. O histórico público contém mensagens e recibos destinados ao morador; eventos de auditoria não devem ser tratados como resposta pública da interface. O endpoint do assistente de eventos segue exclusivamente o contrato local do enunciado.
 
 ## 9. Observabilidade e operação
 
-O Makefile oferece setup, config, build, up, stop, down, ps, logs e testes. make up prepara configuração local e sobe a composição. O Dockerfile tem estágios development e production, com entrypoint único que despacha dev/runserver, prod e test usando exec. O override configs/compose.dev.yaml habilita recarga automática e montagem de código; a composição base mantém a imagem imutável. A preparação idempotente fica em configs/setup_local.py e a massa sintética em dados/seed_agenda.py. Não existe pasta scripts na raiz. Cada serviço publica Swagger, OpenAPI e health. O toolkit propaga X-Request-ID nas chamadas entre serviços. A subida normal preserva os volumes e as migrações são transacionais.
+`make setup` prepara `configs/.env` sem sobrescrever a configuração existente. `make up` constrói e inicia o cluster de `configs/compose.yaml`; `make down` preserva os volumes. Cada serviço possui seu Dockerfile e entrypoint com propagação de sinais por `exec`. [ADR-0008](../adr/ADR-0008-cluster-unico-e-containers-por-servico.md) registra a organização.
 
-O SchemaRepository usa ORM nas cargas e transformações de dados. DDL fica restrito a criação e alteração de esquema. O importador em dados/importar_cadastros.py usa APIs administrativas para cadastros ausentes. A geração removível de reservas de teste usa um repository ORM próprio da agenda.
+Preparadores explícitos criam as tabelas atuais e importam as fixtures quando ainda inexistentes; repetir a preparação conserva registros existentes. A inicialização principal usa `services/initialize.py`; session-init executa a preparação ADK do portal e agent-init prepara ORM e ADK acadêmicos. Operações auxiliares pertencem a `infra/operations`. Alterações de schema existente exigem migração própria, sem restauração implícita.
+
+O inventário de configuração e os procedimentos de prontidão e recuperação de cada serviço estão no [README](../../README.md#modos-prontidão-e-recuperação).
+
+O lifespan do toolkit valida os nomes de configuração obrigatória declarados em `REQUIRED_SECRETS`. `/health` mede atividade do processo e não consulta banco. PostgreSQL tem seu próprio healthcheck; não há endpoint /ready: a prontidão operacional combina jobs concluídos, dependências saudáveis e uma operação autorizada de domínio. Histórico, ledger, admissão e sessões/eventos ADK são preparados explicitamente antes de HTTP; o lifespan fecha recursos e não cria tabelas.
+
+Logs estruturados registram serviço, rota, método, status, duração e correlação. O ambiente de desenvolvimento pode fornecer diagnóstico técnico sanitizado; respostas públicas de produção não expõem traceback ou dados sensíveis. Resultados de testes, capturas, pareceres e roteiros de execução ficam fora do repositório.
 
 ## 10. Decisões, riscos e validação
 
 | Decisão | Origem | Estado | ADR |
 | --- | --- | --- | --- |
-| Serviços por domínio e camadas | Recorte estrutural do produto e F01 | accepted | [ADR-0001](../adr/ADR-0001-servicos-por-dominio-e-camadas.md) |
-| ORM e integridade transacional | Padrão de persistência e F01/F07 | accepted | [ADR-0002](../adr/ADR-0002-orm-e-integridade-transacional.md) |
-| Identidade central e permissão por recurso | F03/F04 e vínculos F02 | accepted | [ADR-0003](../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md) |
-| Toolkit e operação reproduzível | F01 e padrão operacional do produto | accepted | [ADR-0004](../adr/ADR-0004-toolkit-e-operacao-dos-servicos.md) |
-| Regulamento único e versões imutáveis | F06 | accepted | [ADR-0005](../adr/ADR-0005-regulamento-unico-versionado.md) |
-| Dois bancos nesta etapa | Topologia observada; confirmação específica pendente | proposed | [ADR-0006](../adr/ADR-0006-persistencia-compartilhada-da-base.md) |
+| Serviços e camadas | F01 | accepted | [ADR-0001](../adr/ADR-0001-servicos-por-dominio-e-camadas.md) |
+| ORM e integridade transacional | F01/F07 | accepted | [ADR-0002](../adr/ADR-0002-orm-e-integridade-transacional.md) |
+| Identidade central e autorização por recurso | F03/F04 | accepted | [ADR-0003](../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md) |
+| Infraestrutura HTTP compartilhada | F01 | accepted | [ADR-0004](../adr/ADR-0004-toolkit-e-operacao-dos-servicos.md) |
+| Regulamento único versionado | F06 | accepted | [ADR-0005](../adr/ADR-0005-regulamento-unico-versionado.md) |
+| Fronteiras de persistência do portal e assistente | F01/F09/F10 | accepted | [ADR-0006](../adr/ADR-0006-persistencia-compartilhada-da-base.md) |
+| Framework e convenções do cluster | F01 | accepted | [ADR-0007](../adr/ADR-0007-framework-e-ciclo-de-vida.md) |
+| Cluster único e containers por serviço | F01 | accepted | [ADR-0008](../adr/ADR-0008-cluster-unico-e-containers-por-servico.md) |
+| Delegação tipada e recibos do servidor no portal | F07/F08/F09 | accepted | [ADR-0009](../adr/ADR-0009-delegacao-tipada-e-recibos-do-servidor.md) |
 
-| Risco ou pendência | Impacto | Mitigação ou próxima decisão | Fonte |
+| Risco ou pendência | Impacto | Próxima verificação | Fonte |
 | --- | --- | --- | --- |
-| Banco de condomínio compartilhado | Acopla migrações e disponibilidade dos serviços | Preservar domínio dos repositories; decidir separação física antes de uma migração própria | ADR-0006 |
-| Introspecção central indisponível | APIs privadas deixam de operar | Falhar fechado, readiness e erro de dependência sem mutação | F03 |
-| Leituras e edições concorrentes | Podem gerar duplicidade ou perda de alteração | Constraints, locks e versão na transação, com recusa explícita | F02/F04/F05/F06 |
-| Agente ainda sem integração | Não cria reservas/autorizações nem confirma ações | Blueprint e implementação posterior; preservar casos futuros como pendentes | F07–F10 |
-| Processamento assíncrono sugerido | Acrescenta confirmação, idempotência e retomada a definir | Discutir no blueprint; fila não substitui exclusividade no armazenamento | Enunciado, garantia 5 |
+| Banco de condomínio compartilhado | Acoplamento de esquema e disponibilidade | Verificar limites transacionais e indisponibilidade compartilhada | ADR-0006 |
+| Resposta do modelo | Interpretação pode divergir da intenção | Avaliar frases e eventos reais do protocolo; regra permanece no servidor | F06–F10 |
+| Versão de regulamento sem política de execução mapeada | A consulta não autoriza automaticamente novas escritas | Recusar o efeito até existir regra de execução aplicável | F06/F07/F08 |
+| Confirmação e concorrência | Repetição ou interrupção pode disputar um efeito | Verificar recibos, transações e retomada nas réplicas reais | F07/F09/F10 |
 
-### Verificações realizadas
+### Validação e rastreabilidade
 
-As fontes são os modelos, repositories, composição, rotas, specs e PRD versionados. O PRD e os quatorze pacotes de specs têm verificação estrutural estrita. Os links locais e os estados dos seis ADRs foram conferidos. As cinco figuras Mermaid foram renderizadas localmente; capturas, resultados de testes e avaliação permanecem externamente ao repositório. A documentação não concede aceite humano nem afirma que as integrações futuras estão implementadas.
+As fontes são composição, código, PRD e contratos versionados. Conferir links, coerência dos diagramas, fronteiras, build e runtime do candidato faz parte de sua avaliação. Resultados anteriores não concedem aceite ao corte atual. F01 governa a operação; F02–F06, cadastros e identidade; F07–F09, ferramentas e conversa; F10, as garantias do desafio; F11–F14, as jornadas da interface. O aceite humano permanece uma decisão explícita.
 
-### Handoff para especificação
-
-F01–F06 e F11–F14 usam os ADRs da base; F07/F08 distinguem consultas e horários das mutações futuras pelo agente. F09 preserva sessões e fronteira de indisponibilidade. F10 mantém o contrato acadêmico para etapa posterior. O blueprint futuro deve mapear agente principal, especialistas, tools, sessão, confirmação e exclusividade conforme o enunciado, antes de escolher mecanismo de fila, se aplicável.
+O gateway da API do desafio resolve dinamicamente os nomes das duas réplicas pelo DNS interno do Docker, com atualização a cada cinco segundos e estado de upstream compartilhado. A recriação de uma réplica não exige reiniciar o gateway. Requisições de alteração não são repetidas automaticamente em outra réplica.

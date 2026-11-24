@@ -1,0 +1,46 @@
+.syn-button,
+.syn-alert {
+  box-sizing: border-box;
+  padding: 0.65rem 1rem;
+  font: inherit;
+  border: 1px solid hsl(var(--border));
+}
+.syn-button {
+  border-radius: var(--radius-button);
+  cursor: pointer;
+  font-weight: 650;
+  color: hsl(var(--primary-foreground));
+  background: hsl(var(--syn-element-token, var(--primary)));
+}
+.syn-button[data-variant="secondary"] {
+  color: hsl(var(--foreground));
+  background: hsl(var(--syn-element-token, var(--secondary)));
+}
+.syn-button[data-variant="danger"] {
+  color: hsl(var(--destructive-foreground));
+  background: hsl(var(--syn-element-token, var(--destructive)));
+}
+.syn-button[data-size="small"] {
+  padding: 0.4rem 0.75rem;
+}
+.syn-button[data-size="large"] {
+  padding: 0.9rem 1.35rem;
+}
+.syn-button:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+.syn-alert {
+  border-radius: var(--radius-alert);
+  color: hsl(var(--foreground));
+  background: hsl(var(--syn-element-token, var(--muted)));
+}
+.syn-alert[data-variant="warning"] {
+  border-inline-start: 4px solid hsl(var(--warning, var(--primary)));
+}
+.syn-alert[data-variant="success"] {
+  border-inline-start: 4px solid hsl(var(--success, var(--primary)));
+}
+.syn-alert[data-variant="danger"] {
+  border-inline-start: 4px solid hsl(var(--destructive));
+}

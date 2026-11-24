@@ -2,9 +2,9 @@
 
 ## 1. Sumário executivo
 
-A entrega atual é a base administrativa manual sobre a qual será construído o assistente do desafio. Ela deve funcionar sem Google ADK, Gemini, fila ou credencial de modelo. A operação administrativa engloba contas, apartamentos e vínculos, áreas comuns, consulta de agenda e reservas, registro de horários de visitas e reservas e manutenção do regulamento versionado.
+A entrega obrigatória é a API do assistente do desafio Regra é regra, com Google ADK, Gemini, seis rotas em localhost:8000 e cinco garantias verificáveis fora do prompt. O portal autenticado do condomínio é um complemento de portfólio e opera no mesmo cluster, com rotas e persistência separadas.
 
-O Residencial Aurora reúne cadastros do condomínio, agenda e contas em um produto autenticado. Administração mantém usuários, vínculos, áreas comuns e o texto vigente. Moradores consultam somente dados de unidades vinculadas. A base inclui a sessão autenticada do chat para avançar para a integração de agentes. A integração das tools, o provedor de modelos e o adaptador acadêmico têm uma etapa de implementação posterior.
+As funções administrativas independem de chamadas ao modelo; a execução completa do cluster exige a configuração do provedor. A composição inclui o assistente para morador, com consultas, reservas e visitas confirmadas, sem pagamento real. Implementação disponível, teste automatizado e aceite humano são estados distintos; nenhum deles deve ser inferido do outro.
 
 ## 2. Problema e oportunidade
 
@@ -12,8 +12,8 @@ O Residencial Aurora reúne cadastros do condomínio, agenda e contas em um prod
 | --- | --- | --- |
 | Dados iniciais em arquivos estáticos | Atualizações de gestão ficam dispersas e manuais | Importar fixtures uma vez e operar cadastros e versões no banco |
 | Uma conta se vincula a mais de uma unidade | A identidade da conta sozinha não determina a agenda autorizada | Validar o vínculo nas consultas e fixar a unidade por sessão |
-| Ações de chat podem cobrar ou autorizar acesso | Um pedido mal interpretado pode gravar um efeito indevido | Na integração, implementar confirmação e regras de domínio testáveis fora do modelo |
-| Produto e avaliador usam entradas diferentes | Rotas locais do avaliador não devem virar atalhos do produto | Manter a entrada acadêmica futura isolada do proxy autenticado |
+| Ações de chat podem cobrar ou autorizar acesso | Um pedido mal interpretado pode gravar um efeito indevido | Aplicar confirmação e regras de domínio testáveis fora do modelo |
+| Produto e avaliador usam entradas diferentes | Rotas locais do avaliador não devem virar atalhos do produto | Manter a entrada do assistente isolada do proxy autenticado |
 
 O recorte atual tem como resultado uma administração utilizável, com recusas seguras, integridade dos vínculos, preservação do histórico e recuperação após reinício. Os testes automatizados e a validação humana medem os cenários especificados; não há compromisso de ausência absoluta de defeitos.
 
@@ -22,9 +22,9 @@ A linha de base de tempo de cadastro e esforço de operação ainda não foi med
 ## 3. Público-alvo
 
 - **Administração:** mantém os cadastros, quem responde por cada unidade e o regulamento. Consulta a agenda por área e registra horários de reservas e visitas.
-- **Morador:** usuário que representa o proprietário e responsável pela unidade. Seleciona uma unidade sob sua responsabilidade, consulta suas reservas e visitas e abre a futura jornada de assistência.
+- **Morador:** usuário que representa o proprietário e responsável pela unidade. Seleciona uma unidade sob sua responsabilidade, consulta suas reservas e visitas e abre a jornada de assistência na configuração habilitada.
 - **Pessoa em aprendizagem:** implementa e inspeciona a orquestração, tools e retomada uma etapa por vez.
-- **Avaliador:** executa o contrato local acadêmico depois da implementação do agente.
+- **Avaliador:** executa o contrato local do assistente depois da implementação do agente.
 
 ## 4. Objetivos e métricas de sucesso
 
@@ -33,21 +33,21 @@ A linha de base de tempo de cadastro e esforço de operação ainda não foi med
 | Preparar a base local | Conferir serviços saudáveis e abrir login pelo proxy | Uma execução de Compose em ambiente limpo |
 | Controlar operações por papel e recurso | Executar casos negativos e comparar estado anterior e posterior | Nenhum efeito indevido nos cenários especificados |
 | Preservar cadastro e versões | Editar, reiniciar e comparar conta, proteção do histórico e regimento | Revisões e dados confirmados preservados |
-| Concluir integração de agentes | Verificar ações gratuitas, pagas, recusa, reinício, consulta e corrida | Provas da integração pendentes da implementação |
-| Cumprir o protocolo acadêmico | Registrar saída e projeções dos 15 passos do avaliador | Execução posterior à integração de agentes |
+| Concluir integração de agentes | Verificar ações gratuitas, pagas, recusa, reinício, consulta e corrida | Há provas parciais; avaliar no corte de entrega |
+| Cumprir o protocolo do desafio | Registrar saída e projeções dos 15 passos do avaliador | Roteiro completo do avaliador com Gemini, sem substituir por modelos injetados |
 
 Requisitos não funcionais: [NFR01](non-functional/NFR01-seguranca.md), [NFR02](non-functional/NFR02-durabilidade.md), [NFR03](non-functional/NFR03-privacidade.md), [NFR04](non-functional/NFR04-operacao.md).
 
 ## 5. Histórias de usuário
 
-- [F01](functional/F01-fundacao.md) — Como operador, quero subir o ambiente local com um comando para testar o produto sem configurar um provedor de modelos.
+- [F01](functional/F01-fundacao.md) — Como operador, quero subir o cluster local com um comando e configuração válida para acessar o portal, os serviços e a API do assistente.
 - [F03](functional/F03-autenticacao.md) — Como usuário do residencial, quero entrar com minhas credenciais e ter acesso às operações do meu papel.
 - [F04](functional/F04-usuarios.md) — Como administrador, quero criar perfis de moradores e corrigir seus dados para manter os acessos do residencial.
 - [F05](functional/F05-areas.md) — Como administrador, quero manter áreas e taxas atualizadas para que morador e agenda consultem o catálogo correto.
 - [F06](functional/F06-regulamento.md) — Como administrador, quero publicar novas versões do regulamento e saber quem alterou cada versão e quando.
 - [F02](functional/F02-apartamentos.md) — Como administrador, quero vincular apartamentos a moradores para que cada conta possa selecionar somente as unidades que ocupa.
-- [F07](functional/F07-reservas.md) — Como morador, quero consultar reservas da unidade selecionada e depois aprender a solicitar reservas e cancelamentos pelo assistente.
-- [F08](functional/F08-visitantes.md) — Como morador, quero consultar autorizações da minha unidade e depois autorizar uma visita por uma ação confirmada.
+- [F07](functional/F07-reservas.md) — Como morador, quero consultar reservas da unidade selecionada e solicitar reservas e cancelamentos pelo assistente.
+- [F08](functional/F08-visitantes.md) — Como morador, quero consultar autorizações da minha unidade e autorizar uma visita por uma ação confirmada.
 - [F09](functional/F09-chat-agente.md) — Como morador, quero abrir o chat em uma unidade vinculada. A integração com o domínio deve preservar o contexto da sessão.
 - [F10](functional/F10-avaliacao.md) — Como avaliador, quero executar o protocolo documentado em ambiente local isolado e verificar as garantias pelas rotas e pelos dados.
 
@@ -72,7 +72,7 @@ Requisitos não funcionais: [NFR01](non-functional/NFR01-seguranca.md), [NFR02](
 | F07 | Reservas e agenda por área | Reservas | 5 | 1 | full | [F07](functional/F07-reservas.md) |
 | F08 | Autorizações de visita | Acesso ao residencial | 5 | 1 | full | [F08](functional/F08-visitantes.md) |
 | F09 | Chat do morador e agente | Agentes | 6 | 1 | full | [F09](functional/F09-chat-agente.md) |
-| F10 | Compatibilidade e aceite acadêmico | Integração | 7 | 1 | full | [F10](functional/F10-avaliacao.md) |
+| F10 | Compatibilidade e aceite do desafio | Integração | 7 | 1 | full | [F10](functional/F10-avaliacao.md) |
 | F11 | Navegação responsiva por perfil | Interface | 3 | 1 | full | [F11](functional/F11-navegacao.md) |
 | F12 | Visão geral administrativa | Administração | 6 | 1 | full | [F12](functional/F12-painel-administrativo.md) |
 | F13 | Visão geral do morador | Morador | 6 | 1 | full | [F13](functional/F13-painel-morador.md) |
@@ -84,20 +84,20 @@ Os códigos originais de produto FR01 a FR10 correspondem, pela ordem, a F01 a F
 
 | Etapa | Funcionalidades e critérios | Condição de fechamento |
 | --- | --- | --- |
-| Base administrativa atual | F01–F06, F11, F12 e F14; F07-AC01/AC04/AC06 e segurança/NFR da base; F08-AC04/AC05 e segurança/NFR da base | Fluxos administrativos implementados, recusas e concorrência exercitadas, dados preservados após reinício, documentação coerente e aceite humano explícito |
-| Consultas do morador preservadas | F13 e consultas por vínculo em F02/F05/F07/F08/F14 | Não expor dados de outra conta nem regredir durante o fechamento administrativo |
-| Fronteira já disponível, fora do fechamento administrativo | Sessões persistidas de F09 e mensagem de integração não configurada | Mantém estado observável; não conta como agente concluído |
-| Próxima etapa do desafio | F07-AC02/AC03/AC05; F08-AC01/AC02/AC03; integração de F09 e protocolo de F10 | Blueprint, arquitetura, implementação e avaliação próprios, preservando os IDs e as cinco garantias do enunciado |
+| Base administrativa | F01–F06, F11–F14; consultas e horários de F07/F08 | Readiness local, autorização, persistência, jornadas por perfil e aceite independente por critério. |
+| Agente no portal autenticado | F06–F09 nos configuração do cluster | Ferramentas autorizadas; consulta de agenda separada de regulamento; efeitos confirmados e histórico observável; evidência de runtime por cenário. |
+| Entrega do contrato do desafio | F10 e garantias do desafio de F06–F09 | Os 15 passos em clone limpo com Gemini real, arquivos oficiais intactos, API documentada em localhost:8000, corte publicado na main do fork após aceite. |
+| Qualidade transversal | Todas as features e NFRs aplicáveis | Comandos reprodutíveis de lint, testes, build, checagem de fronteiras, docstrings coerentes e aceite humano separado. |
 
-Os casos posteriores permanecem no PRD e nos contratos com seu modo explícito. Seu adiamento não reprova o recorte administrativo nem os transforma em aprovados. A aceitação integral do desafio depende de concluí-los. A avaliação da base publica também os casos futuros como não executados quando a matriz global for utilizada.
+Evidências anteriores são ponto de partida, não equivalem a uma avaliação independente do corte atual. Acompanhar evidências por feature, sem marcar como concluída uma prova que não foi executada.
 
 ## 7. Fora do escopo
 
 - Múltiplos condomínios, pagamentos reais, estornos e cancelamento administrativo de reservas.
 - Cadastro de outros ocupantes da unidade, separação entre proprietário e responsável, controle de comparecimento, documentos e convidados associados a reservas.
 - Publicação em produção, programa de identidade externo e chave real de provedor na base.
-- Misturar o caminho acadêmico futuro com as rotas autenticadas do produto.
-- Nesta entrega administrativa: criar/cancelar reservas e autorizar visitantes pelo chat, executar tools, confirmar cobrança/acesso, selecionar provedor/modelo ou implantar fila de processamento. A fila é hipótese de arquitetura para discussão do blueprint posterior.
+- Misturar os caminhos do assistente e do portal autenticado do produto.
+- SSE, fila dedicada e deploy público não são requisitos do desafio.
 
 ## 8. Grafo de dependências
 
@@ -120,7 +120,7 @@ Os casos posteriores permanecem no PRD e nos contratos com seu modo explícito. 
 
 ### Fundação
 
-F01 entrega a composição e a persistência, incluindo o ponto de integração do agente. F03 resolve identidade e permissão antes de habilitar cadastros e as consultas. A base publica a sessão de chat quando as consultas de domínio estão disponíveis. A orquestração e o avaliador são etapas posteriores.
+F01 entrega a composição e a persistência, incluindo o ponto de integração do agente. F03 resolve identidade e permissão antes de habilitar cadastros e as consultas. A base publica a sessão de chat quando as consultas de domínio estão disponíveis. A orquestração e a API do assistente possuem contratos próprios, preservando a separação das superfícies.
 
 ### Ondas de execução
 
@@ -130,11 +130,11 @@ F01 entrega a composição e a persistência, incluindo o ponto de integração 
 - Onda 4: apartamentos e vínculos.
 - Onda 5: agenda, reservas e autorizações de visita com prova de leitura e escopo.
 - Onda 6: painéis administrativo e morador, sessão de chat e integração das ferramentas.
-- Onda 7: executar o contrato acadêmico isolado.
+- Onda 7: executar o contrato do assistente isolado.
 
 ### Legenda de prioridades
 
-Prioridade 1 identifica requisitos da entrega pretendida. A etapa de cada evidência indica se ela pertence à base pronta, à integração ou à integração acadêmica.
+Prioridade 1 identifica requisitos da entrega pretendida. A etapa de cada evidência indica se ela pertence à base pronta, à integração ou à integração do assistente.
 
 ### Diagrama
 
@@ -153,7 +153,7 @@ flowchart TD
     F07["F07 · Reservas e agenda por área"]
     F08["F08 · Autorizações de visita"]
     F09["F09 · Chat do morador e agente"]
-    F10["F10 · Compatibilidade e aceite acadêmico"]
+    F10["F10 · Compatibilidade e aceite do desafio"]
     F01 --> F03
     F03 --> F04
     F03 --> F05
@@ -178,7 +178,7 @@ flowchart TD
 
 ## 9. Critérios de aceite
 
-- [F01](functional/F01-fundacao.md#critérios-de-aceite) — Distribuir uma base local que compile, inicie e permita verificar separadamente as superfícies de identidade, cadastros, interface e futura integração do agente.
+- [F01](functional/F01-fundacao.md#critérios-de-aceite) — Distribuir uma base local que compile, inicie e permita verificar separadamente as superfícies de identidade, cadastros, interface e integração opcional do agente.
 - [F03](functional/F03-autenticacao.md#critérios-de-aceite) — Emitir uma sessão autenticada e validar identidade e permissão antes de operações privadas, incluindo bloqueio quando a identidade estiver indisponível.
 - [F04](functional/F04-usuarios.md#critérios-de-aceite) — Cadastrar, editar, desativar e consultar usuários dos tipos Administração e Morador, com proteção à última administração ativa.
 - [F05](functional/F05-areas.md#critérios-de-aceite) — Permitir CRUD de áreas e taxa não negativa, com escopo administrativo e preservação de referências históricas.
@@ -201,4 +201,4 @@ flowchart TD
 
 - A identidade resolvida por F03 permite criar contas em F04 e vinculá-las em F02. O morador passa a ver somente as unidades legítimas.
 - A agenda F07 usa unidade e área de F02 e F05. A consulta devolve o recorte permitido e a exclusão de cadastro mantém o histórico referenciado.
-- O chat F09 abre sessão numa unidade validada e usa os contratos de domínio de F06 a F08 para orientar a futura aula. Confirmação e eventos são observados no protocolo F10 depois do agente implementado.
+- O chat F09 abre sessão numa unidade validada e usa os contratos de domínio de F06 a F08 na composição autenticada. F10 verifica separadamente confirmação e eventos pelo protocolo oficial.

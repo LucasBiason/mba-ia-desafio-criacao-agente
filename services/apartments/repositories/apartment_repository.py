@@ -1,14 +1,15 @@
 from sqlalchemy import select
 
-from services.persistence.repository import ApplicationRepository
+from microservice_toolkit import Repository
 from services.apartments.models.apartment import Apartment
 from services.apartments.models.apartment_resident import ApartmentResident
 
 
-class ApartmentRepository(ApplicationRepository):
+class ApartmentRepository(Repository):
     def list(self, resident_id=None):
         query = select(Apartment, ApartmentResident.resident_id).outerjoin(
-            ApartmentResident, ApartmentResident.apartment_id == Apartment.id,
+            ApartmentResident,
+            ApartmentResident.apartment_id == Apartment.id,
         )
         if resident_id is not None:
             query = query.where(ApartmentResident.resident_id == resident_id)
@@ -36,7 +37,9 @@ class ApartmentRepository(ApplicationRepository):
             if relation is not None:
                 self.session.delete(relation)
         elif relation is None:
-            self.session.add(ApartmentResident(apartment_id=apartment_id, resident_id=resident_id))
+            self.session.add(
+                ApartmentResident(apartment_id=apartment_id, resident_id=resident_id)
+            )
         else:
             relation.resident_id = resident_id
         self.session.flush()

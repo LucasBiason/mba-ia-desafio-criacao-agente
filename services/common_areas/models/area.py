@@ -1,6 +1,7 @@
 from sqlalchemy import CheckConstraint, Column, Index, Integer, Text, func
 
-from services.persistence.base import Base
+from microservice_toolkit import Base
+
 
 class Area(Base):
     __tablename__ = "areas"

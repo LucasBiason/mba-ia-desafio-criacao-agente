@@ -6,19 +6,19 @@ Requisitos não funcionais relacionados: NFR01, NFR02, NFR03
 
 ## Descrição
 
-Nesta entrega administrativa, o escopo é consulta das autorizações existentes e edição dos horários. Novas autorizações com confirmação pelo agente são a etapa posterior.
+A base consulta autorizações existentes e edita horários. O assistente propõe autorizações para a própria unidade e grava somente após decisão explícita pela rota de confirmações.
 
 Consultar autorizações existentes e registrar horários de entrada e saída. Definir a criação de nova autorização pelo assistente para a aula.
 
-Como morador, quero consultar autorizações da minha unidade e depois autorizar uma visita por uma ação confirmada.
+Como morador, quero consultar autorizações da minha unidade e autorizar uma visita por uma ação confirmada.
 
 A referência de produto original é FR08. A correspondência dos critérios anteriores é F08-AC01 ↔ FR08/AC01, F08-AC02 ↔ FR08/AC02, F08-AC03 ↔ FR08/AC03. Critérios adicionais descrevem verificações específicas desta separação de etapas.
 
 ## Capacidades
 
 - Depende de: F02.
-- Fornece: Projeções de visita separadas por unidade e procedimento para futura gravação após aprovação explícita.
-- Integração: Consulta de visitante chega a `visits` e combina identidade com vínculo. A aula liga a ação de visitante à mesma infraestrutura de confirmações de reservas pagas. Uma ação pendente carrega somente o nome, a data e o apartamento já validado.
+- Fornece: Projeções de visita separadas por unidade e procedimento de gravação após aprovação explícita.
+- Integração: Consulta de visitante chega a `visits` e combina identidade com vínculo. O agente liga a ação de visitante à mesma infraestrutura de confirmações de reservas pagas. Uma ação pendente carrega somente o nome, a data e o apartamento já validado.
 
 ## Comportamento esperado
 

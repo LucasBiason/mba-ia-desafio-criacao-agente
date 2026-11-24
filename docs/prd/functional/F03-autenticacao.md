@@ -56,7 +56,7 @@ A etapa de cada prova está identificada na [spec desta funcionalidade](../../sp
 
 ## Fora do escopo
 
-Cadastros públicos, autenticação multifator, login federado e exigência de JWT no futuro modo acadêmico local.
+Cadastros públicos, autenticação multifator, login federado e exigência de JWT no futuro assistente local.
 
 ## Tratamento de erros
 

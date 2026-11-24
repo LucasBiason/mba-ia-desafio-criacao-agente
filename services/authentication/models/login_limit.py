@@ -1,6 +1,7 @@
 from sqlalchemy import Column, DateTime, Integer, Text
 
-from services.persistence.base import Base
+from microservice_toolkit import Base
+
 
 class LoginLimit(Base):
     __tablename__ = "login_limits"

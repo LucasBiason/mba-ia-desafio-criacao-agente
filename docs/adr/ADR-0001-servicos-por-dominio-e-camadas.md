@@ -24,11 +24,11 @@ Responsabilidades explícitas, segurança por recurso, preservação dos dados e
 ## Opções consideradas
 
 - Serviços por domínio e camadas explícitas, opção escolhida.
-- Serviço de domínio agregado, forma anterior rejeitada no recorte do produto.
+- Serviço agregado sem fronteiras por domínio: opção não adotada.
 
 ## Resultado da decisão
 
-Vamos separar autenticação, usuários, apartamentos, áreas, agenda, visitas, configurações e fronteira do agente em aplicações próprias. Cada aplicação mantém composição mínima, validação de permissão e regra no validator, coordenação no controller, persistência no repository e serialização explícita.
+Vamos separar autenticação, usuários, apartamentos, áreas, agenda, visitas, configurações e fronteira do agente em aplicações próprias. O padrão inclui a API pública do desafio, sem exceção de camadas: cada aplicação mantém composição mínima, validação de permissão e regra no validator, coordenação no controller, persistência no repository e serialização explícita.
 
 ### Consequências
 

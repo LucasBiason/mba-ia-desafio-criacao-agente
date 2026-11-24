@@ -26,5 +26,5 @@
 - Tipo: comportamento.
 - Depende de: operações descritas nos passos anteriores na etapa de cada critério.
 - Ações: preparar massa descartável e localizar as fronteiras que fornecem a prova para regulamento único e versionado.
-- Testes: Comparar estado e resposta da operação em volume isolado. Induzir concorrência quando a funcionalidade tiver disputa de escrita. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas.
+- Testes: publicar um texto sintético novo em PUT /api/admin/regulation com base_version=V; reiniciar parameters e ler vigente e /versions; confirmar que vigente permanece V+1 e histórico conserva V e V+1 com o texto e autor publicados; consultar GET /api/resident/regulation e GET /api/admin/regulation/versions usando QA_A; confirmar que vigente retorna 200 sem credenciais; histórico administrativo retorna 403 sem revisões de autoria alheia.
 - Critérios: NFR02-AC01, NFR03-AC01.

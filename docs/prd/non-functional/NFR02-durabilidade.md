@@ -4,14 +4,14 @@ Applies to: F01, F05, F06, F07, F08, F09
 
 ## Descrição
 
-Conservar os efeitos confirmados ao reiniciar e preservar históricos. Escritas concorrentes ou falhas não devem produzir duplicidade ou estado parcialmente aplicado.
+Conservar efeitos confirmados, eventos, pendências e histórico no armazenamento persistente. Reinício não restaura fixtures. A restrição do banco decide uma disputa por área/data.
 
 ## Critérios de aceite
 
 | ID | Condição | Resultado esperado | Como verificar |
 | --- | --- | --- | --- |
-| NFR02-AC01 | Reinício da dependência, corrida de gravação ou falha antes de concluir a escrita | Efeito confirmado permanece. A falha é observável e o domínio fica consistente | Comparar estado e resposta da operação em volume isolado. Induzir concorrência quando a funcionalidade tiver disputa de escrita |
+| NFR02-AC01 | Uma escrita confirmada é consultada após reinício sem restore; duas decisões disputam a mesma área/data em F07 | Escrita e histórico persistem; disputa conserva exatamente uma reserva ativa e reenvio não duplica o efeito | Executar NFR02-AC01 específico em F01/F05/F06/F07/F08/F09, capturando IDs, versões, contagem e resposta definidos no contrato |
 
 ## Método de medição
 
-Execute o teste da matriz de cada funcionalidade em uma composição local isolada. Guarde os estados anterior e posterior, os códigos de resposta ou a verificação de serviço, e registre a revisão. Uma ausência de evidência permanece visível no relatório de validação.
+Use a composição isolada e os pré-requisitos do contrato de cada feature. Cada ramo tem uma requisição nomeada, identidade, estado anterior, resposta e estado posterior; não selecione somente o ramo favorável. Reinícios conservam volumes e não executam restore. Guarde as provas sanitizadas fora do repositório, identificadas por revisão e item P0D, e remova somente os recursos adquiridos para QA. Um lint documental não comprova runtime nem aceite humano. Backup, exportação e retenção adicional não integram este critério.

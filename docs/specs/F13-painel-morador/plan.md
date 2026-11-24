@@ -9,7 +9,7 @@
 
 - Tipo: comportamento.
 - Depende de: identidade e projeções existentes.
-- Ações: conferir web/src/resident.jsx; services/apartments/main.py contra cada cenário do PRD e preservar as rotas existentes.
+- Ações: conferir services/frontend/src/resident.jsx; services/apartments/main.py contra cada cenário do PRD e preservar as rotas existentes.
 - Testes: exercitar as jornadas dos critérios no desktop e celular, conferir chamadas e saída.
 - Critérios: F13-AC01, F13-AC02, F13-SEC01.
 
@@ -26,5 +26,5 @@
 - Tipo: comportamento.
 - Depende de: API autenticada existente.
 - Ações: revisar a projeção usada pela tela e exercitar as recusas de acesso.
-- Testes: enviar requisições negativas e inspecionar respostas sanitizadas.
+- Testes: solicitar GET /api/resident/reservations?apartment=9102 e GET /api/resident/visits?apartment=9102 com QA_A; confirmar que ambas retornam 403 e o painel não apresenta dados de 9102; abrir #/inicio como QA_A, selecionar 9101 e inspecionar respostas de reservas e visitas; confirmar que resumo contém somente registros de QA_A/9101, sem QA_RES_B, nomes alheios ou credenciais.
 - Critérios: NFR01-AC01, NFR03-AC01.

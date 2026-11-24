@@ -15,7 +15,7 @@ A interface usa a identidade autenticada e as projeções do domínio, preservan
 
 
 
-O recorte de entrega vigente está no [PRD](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento). Casos identificados como integração do agente ou modo acadêmico permanecem especificados para a próxima etapa; não são condição de fechamento da administração manual. Sua ausência não significa aceite desses comportamentos.
+O [recorte de entrega](../../prd/index.md#recorte-de-entrega-e-critérios-de-fechamento) separa base administrativa, portal com assistente e API do assistente. Os modos dos critérios mantêm a superfície exigida; implementar não equivale a demonstrar o aceite.
 
 ## 2. Impacto arquitetural
 
@@ -25,15 +25,17 @@ O navegador resolve a rota, carrega a identidade e chama as APIs existentes na m
 
 Decisões arquiteturais relacionadas: [ADR-0003](../../adr/ADR-0003-identidade-central-e-autorizacao-por-recurso.md).
 
-Reutilizar o Shell e os componentes Synapse presentes no produto. As decisões foram observadas em web/src/app.jsx; services/authentication/routers/authentication_router.py. A navegação por hash conserva os caminhos existentes. Falha de identidade limpa a sessão do navegador e exige nova entrada.
+Reutilizar o Shell e os componentes Synapse presentes no produto. As decisões foram observadas em services/frontend/src/app.jsx; services/authentication/routers/authentication_router.py. A navegação por hash conserva os caminhos existentes. Falha de identidade limpa a sessão do navegador e exige nova entrada.
 
 ## 4. Visão de componentes
 
-Implementação em web/src/app.jsx; services/authentication/routers/authentication_router.py. A API fornece identidade e dados de domínio, o React resolve as páginas e os componentes apresentam carregamento, conteúdo e erro. Os links preservam nomes acessíveis e o foco usa os componentes existentes.
+Implementação em services/frontend/src/app.jsx; services/authentication/routers/authentication_router.py. A API fornece identidade e dados de domínio, o React resolve as páginas e os componentes apresentam carregamento, conteúdo e erro. Os links preservam nomes acessíveis e o foco usa os componentes existentes.
 
 ## 5. Contratos de interface
 
-Entrada pela navegação do portal no perfil correspondente. As chamadas existentes GET /api/auth/me e as projeções do domínio mantêm o bearer token. Uma recusa de sessão retorna 401. Dados de outro papel permanecem sujeitos ao guard. O resultado observável da UI está nos critérios do PRD.
+A tela `#/perfil` é aberta pelo nome da conta e consome GET `/api/auth/me`; não recebe ID de usuário arbitrário. A resposta pública tem `id`, `name`, `email`, `role` e `active`, sem segredo derivado. POST `/api/auth/logout` revoga a sessão e responde 204; reutilizá-la em /me retorna 401 e a UI volta à entrada. Os requests privados usam Authorization bearer. Falha 503 conserva erro recuperável sem apresentar sucesso ou dados antigos como resposta nova. Os corpos de erro seguem o toolkit descrito em [F03](../F03-autenticacao/spec.md#5-contratos-de-interface).
+
+A tela não disputa unicidade nem grava dados: não inicia transação de escrita e uma falha de leitura não exige rollback de domínio. Se logout ou revogação concorre com a leitura, a próxima consulta autoritativa recusa o bearer e a UI remove o perfil da sessão. Não há valor de credencial derivado exposto ao cliente.
 
 ## 6. Modelo de dados
 
@@ -47,5 +49,5 @@ A feature apresenta projeções e estado transitório da interface. Não cria ta
 | F14-AC01 | Uma conta autenticada; selecionar o nome na barra superior | a tela Meu perfil apresenta nome, e-mail e tipo da identidade autenticada. |
 | F14-AC02 | Sessão encerrada; tentar abrir a rota de perfil | o portal volta à entrada e a API privada recusa a sessão revogada. |
 | F14-SEC01 | Tentar acesso direto sem a permissão exigida | O perfil é obtido da identidade autenticada, sem aceitar um ID arbitrário da interface. |
-| NFR01-AC01 | Enviar requisição sem token ou com papel indevido à API utilizada pela tela | O servidor recusa acesso e a interface apresenta a recusa sem dados protegidos. |
-| NFR03-AC01 | Inspecionar a resposta e o conteúdo renderizado com identidades distintas | Tokens e dados de outras contas não aparecem na evidência publicada. |
+| NFR01-AC01 | Portal e API reais. Dado A sessão QA_A foi revogada por POST /api/auth/logout; quando reutilizar o bearer revogado em GET /api/auth/me e abrir #/perfil. | Então API retorna 401 INVALID_SESSION e o portal retorna à entrada sem perfil. |
+| NFR03-AC01 | Portal e API reais. Dado QA_A e QA_ADMIN estão autenticados em contextos de navegador separados; quando consultar GET /api/auth/me e abrir #/perfil em cada contexto. | Então nome, email e papel coincidem com a própria identidade; respostas excluem password_hash e dados da outra conta. |

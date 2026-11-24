@@ -2,7 +2,11 @@
 
 ## Pré-requisitos
 
-Prepare uma composição isolada e uma massa de dados de demonstração. No cenário de base, use o processo de inicialização do README e registre revisão, resposta e resultado observado. No cenário de aula ou de avaliação, verifique antes a disponibilidade das ferramentas, sessão persistida e credencial de execução externa autorizada. Os dados de origem permanecem intactos.
+Use um projeto Compose exclusivo de QA e volumes novos, sem publicar sobre 8770/8000 já ocupados. Registre revisão e nomes dos recursos adquiridos; credenciais ficam somente no ambiente privado do executor. Nunca use o cluster pessoal nem altere os cinco arquivos de `dados/`. O bootstrap explícito deve terminar antes de HTTP.
+
+Handles do cenário: `QA_ADMIN` é a conta administrativa de demonstração autenticada; por POST `/api/admin/users`, crie `QA_A` e `QA_B` como residents ativos com emails sintéticos distintos e retenha os IDs e bearers somente em memória. Por POST `/api/admin/apartments`, crie `9101`→QA_A e `9102`→QA_B; `QA_AREA` é a área `qa-area` criada em POST `/api/admin/areas` com taxa 100. Capture IDs retornados em vez de supor IDs internos. `QA_DAY` é uma data futura livre escolhida após consulta da agenda. `QA_RES_A`, `QA_RES_B` e `QA_VISIT` são códigos/IDs retornados pelas ações confirmadas na integração quando o cenário os utiliza; nomes de visitantes são sintéticos. `QA_SESSION_A` e `QA_PENDING` são IDs retornados pela abertura de sessão e pela pendência original. Cenários acadêmicos usam separadamente `QA_SESSION` retornado por POST `/sessoes` com apartamento 101; não reutilizam JWT ou dados do portal.
+
+A massa de cada item é preparada novamente em volume descartável para não depender do item anterior. Para casos de navegador use contextos separados para QA_ADMIN, QA_A e QA_B; desktop 1280×900 e celular 390×844. Ao terminar ou falhar, feche os contextos e remova exclusivamente contêineres, rede e volumes do projeto QA registrado, sem executar restore no ambiente pessoal. Provas externas guardam status, campos permitidos, contagens e hashes; não publicam senha ou bearer. A preparação descreve o ensaio e não concede execução ou aceite humano.
 
 ## Itens
 
@@ -12,8 +16,8 @@ Prepare uma composição isolada e uma massa de dados de demonstração. No cen�
 - **E2E-F03-04** (P0D, cobre F03-AC04) — A identidade centralizada indisponível em teste isolado. Induzir falha da introspecção, obter 503 e comparar o estado após reativar o serviço -> O consumidor devolve erro de dependência e não executa a ação. Modo: Base.
 - **E2E-F03-05** (P0D, cobre F03-SEC01) — Uma sessão autenticada encerrada pelo usuário. Fazer logout, retomar a rota privada e reapresentar o bearer anterior -> A sessão perde validade no servidor e o navegador retorna ao login. Modo: Base.
 - **E2E-F03-06** (P0D, cobre F03-SEC02) — Login com senha errada ou conta inexistente. Comparar corpo e status dos erros e revisar o conteúdo do registro da aplicação -> A resposta recusa acesso sem confirmar a existência da conta ou revelar segredo. Modo: Base.
-- **E2E-F03-07** (P0D, cobre NFR01-AC01) — Token ou papel inadequado, acesso fora do vínculo ou ação sensível sem decisão. Selecionar o caso negativo aplicável ao requisito e comparar status, estado e evidência observável -> A fronteira recusa acesso ou mantém a ação pendente conforme o caso. A operação indevida não altera estado. Modo: Base.
-- **E2E-F03-08** (P0D, cobre NFR03-AC01) — Operação privada bem-sucedida ou recusada. Inspecionar projeções, eventos aplicáveis e registros sanitizados do caso sem publicar bearer, senha ou dados de outras contas -> A evidência não inclui segredos ou objetos de unidades fora da autorização. Modo: Base.
+- **E2E-F03-07** (P0D, cobre NFR01-AC01) — Dado Um bearer QA_A foi emitido e encerrado por POST /api/auth/logout; quando reutilizar esse bearer em GET /api/auth/me -> Então HTTP 401 INVALID_SESSION e ausência de perfil no corpo. Modo: Base: HTTP real.
+- **E2E-F03-08** (P0D, cobre NFR03-AC01) — Dado Um login sintético inválido e uma sessão QA_A válida; quando executar POST /api/auth/login com senha inválida e GET /api/auth/me com a sessão válida; inspecionar corpos e logs sanitizados -> Então recusa 401 não repete a senha, perfil 200 exclui password_hash e logs não contêm senha nem token. Modo: Base: HTTP real.
 
 ## Cobertura
 

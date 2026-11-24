@@ -27,8 +27,8 @@ Consolidar os totais de cadastros e os atalhos de gestão para iniciar a operaç
 
 | ID | Condição | Resultado esperado | Como verificar |
 | --- | --- | --- | --- |
-| F12-AC01 | Uma conta administrativa e dados carregados; abrir a visão geral | o painel mostra totais de apartamentos, áreas e reservas coerentes com as APIs. | Executar a jornada no perfil correspondente e comparar a saída com a API quando aplicável |
-| F12-AC02 | Painel administrativo aberto; selecionar um atalho de cadastro ou agenda | a rota correspondente abre e o menu identifica o destino ativo. | Executar a jornada no perfil correspondente e comparar a saída com a API quando aplicável |
+| F12-AC01 | Uma conta administrativa e dados carregados; abrir a visão geral | o painel mostra totais de apartamentos, áreas e reservas coerentes com as APIs. | Como QA_ADMIN, comparar cards com comprimentos de GET /api/admin/apartments, /api/admin/areas e /api/admin/reservations |
+| F12-AC02 | Painel administrativo aberto; selecionar um atalho de cadastro ou agenda | a rota correspondente abre e o menu identifica o destino ativo. | Como QA_ADMIN, acionar cada atalho de apartamentos, áreas e reservas e conferir hash de destino e item ativo |
 
 ## Segurança
 

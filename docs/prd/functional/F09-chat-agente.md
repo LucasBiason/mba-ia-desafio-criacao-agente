@@ -6,9 +6,9 @@ Requisitos não funcionais relacionados: NFR01, NFR02, NFR03
 
 ## Descrição
 
-A integração do assistente é a próxima etapa do desafio. Sessões persistidas e a fronteira de indisponibilidade existentes são preservadas, sem afirmar que a conversa com modelo ou tools está entregue.
+O portal autenticado integra Google ADK/Gemini, múltiplos especialistas por sessão e tools com escopo de unidade. As funções administrativas não exigem uma chamada ao modelo. O aceite exige verificar as jornadas e a persistência no corte candidato.
 
-Entregar o contêiner do chat e os contratos de sessão da base. Orientar a implementação do agente, suas tools e confirmação pela API.
+Oferecer uma conversa contínua por unidade, histórico recuperado automaticamente, consultas e ações de domínio com confirmação pela API. A interface ocupa a área de trabalho com uma linha do tempo e o campo de mensagem no rodapé; não apresenta lista de conversas nem ação para criar outra conversa na mesma unidade.
 
 Como morador, quero abrir o chat em uma unidade vinculada. A integração com o domínio deve preservar o contexto da sessão.
 
@@ -18,7 +18,7 @@ A referência de produto original é FR09. A correspondência dos critérios ant
 
 - Depende de: F06, F07, F08.
 - Fornece: Sessão com usuário e unidade estáveis na base e fronteira de integração documentada para o agente principal e especialistas.
-- Integração: O frontend envia mensagens à API autenticada. A API encaminhará à fronteira privada do serviço de agente somente depois de autorizar usuário e unidade. O contexto de identidade vem do servidor, e o especialista usa portas de domínio para consultar e registrar efeitos. A visão acadêmica usa um adaptador isolado para o contexto inicial fornecido pelo avaliador.
+- Integração: O frontend envia mensagens à API autenticada. A API encaminha à fronteira privada do serviço de agente somente depois de autorizar usuário e unidade. O contexto de identidade vem do servidor, e o especialista usa portas de domínio para consultar e registrar efeitos. A interface do assistente usa um adaptador isolado para o contexto inicial fornecido pelo avaliador.
 
 ## Comportamento esperado
 
@@ -42,6 +42,10 @@ A referência de produto original é FR09. A correspondência dos critérios ant
 - **Quando** abrir sessão, recarregar o navegador, consultar o detalhe e enviar texto com o agente desativado
 - **Então** após reabrir a tela a unidade continua fixa e a mensagem recebe indisponibilidade identificável.
 
+- **Dado** um morador já possui mensagens na unidade selecionada
+- **Quando** abrir o assistente, navegar para outra tela e retornar, ou recarregar o navegador
+- **Então** a mesma conversa é retomada com o histórico, sem selecionar ou criar outra conversa.
+
 ## Critérios de aceite
 
 | ID | Condição | Resultado esperado | Como verificar |
@@ -51,6 +55,7 @@ A referência de produto original é FR09. A correspondência dos critérios ant
 | F09-AC03 | Uma reserva paga aguarda confirmação antes de reiniciar o processo | Após reinício a decisão válida produz um efeito e o reenvio sequencial retorna 409 | Criar pendência, reiniciar sem restaurar, aprovar e comparar agenda e reenvio |
 | F09-AC04 | O morador pergunta pelo horário de fechamento da piscina aos domingos | A resposta usa o horário vigente e os eventos não contêm assuntos não consultados | Comparar a versão do regulamento, resposta, tool chamada e texto persistido em eventos |
 | F09-AC05 | Um morador abre uma sessão numa unidade autorizada e envia uma mensagem | Após reabrir a tela a unidade continua fixa e a mensagem recebe indisponibilidade identificável | Abrir sessão, recarregar o navegador, consultar o detalhe e enviar texto com o agente desativado |
+| F09-AC06 | O morador possui histórico na unidade selecionada | Uma única conversa contínua restaura as mensagens automaticamente, sem lista de conversas ou botão de nova conversa | Abrir, sair e retornar ao assistente, recarregar em desktop e celular e conferir histórico e identificação da mesma sessão |
 
 A etapa de cada prova está identificada na [spec desta funcionalidade](../../specs/F09-chat-agente/spec.md#7-estratégia-de-testes).
 
@@ -62,7 +67,7 @@ A etapa de cada prova está identificada na [spec desta funcionalidade](../../sp
 
 ## Fora do escopo
 
-A base entrega sessão e limite do agente. Conversa com modelo, efeitos de tools, eventos de execução e aprovação são exercícios guiados. O sistema não usa dados de visitante ou reservas alheias como memória do modelo.
+Pagamento real, ações em nome de outra conta e uso de dados de unidades alheias como memória do modelo.
 
 ## Tratamento de erros
 
